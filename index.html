@@ -24,6 +24,16 @@
     .tabs{display:flex;gap:10px;margin-bottom:14px}.tab{padding:8px 12px;border-radius:999px;border:1px solid #334089;background:#1a2044;color:var(--text);cursor:pointer}
     .tab.active{background:#2a3370}
     .theory-summary{line-height:1.5;color:#dce2ff}.theory-summary li{margin:8px 0}
+    .theory-sections{margin-top:12px;display:grid;gap:10px}
+    .theory-sec{background:#141a36;border:1px solid #39458c;border-radius:10px;padding:10px}
+    .theory-sec h4{margin:0 0 6px;font-size:15px}
+    .theory-sec p{margin:0 0 6px;color:#dce2ff}
+    .theory-ex{font-size:13px;color:#9aa3d3}
+    .theory-toggle{width:100%;text-align:left;background:#1a2148;border:1px solid #4453aa;color:#e8ebff;border-radius:8px;padding:10px;cursor:pointer;font-weight:700}
+    .theory-panel{display:none;margin-top:8px;background:#101633;border:1px solid #2f3d88;border-radius:8px;padding:10px}
+    .theory-panel.open{display:block}
+    .theory-calc{margin-top:8px;padding:8px;border-radius:8px;background:#0f1a3b;border:1px solid #3e4c96;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#d5ddff}
+    .theory-fig{margin-top:8px;font-size:12px;color:#a8b1e7}
     .pdf-tools{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
     .btn{padding:8px 12px;border-radius:10px;border:1px solid #4150a7;background:#27306b;color:#fff;cursor:pointer;text-decoration:none;display:inline-block}
     iframe{width:100%;height:420px;border:1px solid #303870;border-radius:12px;background:#fff}
@@ -46,6 +56,10 @@
     .vchip{background:#212a57;border:1px solid #4150a7;border-radius:999px;padding:4px 10px;font-size:12px;display:inline-block}
     .calc-input-row{display:flex;gap:8px;align-items:center;margin-top:10px}
     .calc-input-row input{flex:1}
+    .viz{margin-top:10px;background:#101633;border:1px solid #34408a;border-radius:10px;padding:8px}
+    .viz-title{font-size:12px;color:#9aa3d3;margin-bottom:6px}
+    .viz svg{width:100%;height:130px;display:block}
+    .viz-note{font-size:12px;color:#9aa3d3;margin-top:6px}
     .popup-overlay{position:fixed;inset:0;background:rgba(3,6,22,.7);display:flex;align-items:center;justify-content:center;z-index:50}
     .popup-card{width:min(520px,92vw);background:#171d3f;border:1px solid #4150a7;border-radius:14px;padding:16px;box-shadow:0 10px 35px rgba(0,0,0,.35)}
     .popup-title{font-size:20px;font-weight:800;margin:0 0 8px}
@@ -97,7 +111,16 @@
 <script>
 const chapterPages = [23,46,71,99,126,154,174,207,222,235,256,276];
 const course = [
-{title:'Introduction',summary:['🌍 Derivatives trade in two worlds: exchange-traded (standardized, safer via clearinghouse) and OTC (flexible, customized).','📄 Forward = private custom agreement for future buy/sell at fixed price.','🏛️ Futures = exchange version of forward + daily margin settlement.','🎟️ Options give a right (not obligation): Call to buy, Put to sell, with a premium.','🧩 Trader roles: Hedgers reduce risk, Speculators take risk for profit, Arbitrageurs seek near risk-free pricing gaps.'],quiz:[
+{title:'Introduction',summary:['🌍 Derivatives trade in two worlds: exchange-traded (standardized, safer via clearinghouse) and OTC (flexible, customized).','📄 Forward = private custom agreement for future buy/sell at fixed price.','🏛️ Futures = exchange version of forward + daily margin settlement.','🎟️ Options give a right (not obligation): Call to buy, Put to sell, with a premium.','🧩 Trader roles: Hedgers reduce risk, Speculators take risk for profit, Arbitrageurs seek near risk-free pricing gaps.'],theorySections:[
+{id:'1.1',title:'Exchange-traded markets',text:'Exchange-traded derivatives use standardized contracts set by the exchange (quantity, quality, expiry dates). This makes trading fast and transparent, because everyone trades the same product specifications.',detail:'A clearing house stands between buyer and seller, which reduces direct counterparty risk. This is why exchange markets are preferred when high liquidity and low bilateral credit concern are important.',example:'If you buy one crude oil futures contract on an exchange, you accept a fixed contract size and listed maturity month, instead of negotiating these details manually.',calc:'Mini check: If contract size = 1,000 barrels and price moves +$2/barrel, P&L impact ≈ +$2,000 for one long contract.',figure:'📘 In-book figure idea: contract specification table (asset, size, delivery month) and clearing flow (buyer ↔ clearing house ↔ seller).'},
+{id:'1.2',title:'Over-the-counter (OTC) markets',text:'OTC markets are private dealer networks where contracts can be customized to exact business needs (amount, date, underlying, settlement style).',detail:'This flexibility is useful for corporates with non-standard exposures. The trade-off is higher bilateral credit risk, because performance depends on the specific counterparty unless centrally cleared.',example:'A company expecting a unique FX payment date can agree a tailored forward with its bank instead of using a standardized exchange contract.',calc:'Mini check: If a firm must hedge exactly 7.3M EUR for a custom date, OTC can set notional = 7.3M exactly (no rounding to contract lots).',figure:'📘 In-book figure idea: network diagram of institutions connected by bilateral OTC contracts.'},
+{id:'1.3',title:'Forward contracts',text:'A forward is a private agreement to buy/sell an asset at future date T for fixed delivery price K agreed today.',detail:'At initiation, value is typically near zero (fair pricing). Over time, value changes with market price movements. Forwards are often used for currencies, commodities, and rates in customized hedging.',example:'An importer locks USD purchase price today to reduce uncertainty in 6 months when invoice is due.',calc:'Example: If agreed K=100 and market at maturity is ST=108, long forward payoff ≈ ST-K = +8 per unit.',figure:'📘 In-book figure idea: linear forward payoff line crossing zero at K.'},
+{id:'1.4',title:'Futures contracts',text:'Futures are exchange-traded forwards with daily marking-to-market. Gains/losses are settled each day through margin accounts.',detail:'Because losses are realized daily, credit build-up is reduced compared with a single settlement at maturity. Initial and maintenance margin protect the system against default.',example:'If futures price drops while you are long, your margin account decreases immediately and may trigger a margin call.',calc:'Example: Long 2 contracts, size 100 each, daily change = -3 → P&L = 2×100×(-3) = -600 (debited today).',figure:'📘 In-book figure idea: timeline showing daily settlement cash flows into/out of margin account.'},
+{id:'1.5',title:'Options (Call / Put)',text:'Options provide asymmetry: the holder has a right but not an obligation. This creates limited downside for buyer and nonlinear payoff.',detail:'Call gives right to buy at strike K; put gives right to sell at K. Buyer pays premium upfront. Writer receives premium but takes obligation if exercised.',example:'Buying a call can be used as upside participation with capped loss equal to premium.',calc:'Example (long call): K=100, premium=4, ST=112 → profit = max(112-100,0)-4 = 8.',figure:'📘 In-book figure idea: hockey-stick payoff for long call and long put.'},
+{id:'1.6',title:'Hedgers',text:'Hedgers reduce risk in existing business positions (inventory, FX receivables/payables, funding costs).',detail:'Goal is stability, not maximizing speculative profit. Hedge effectiveness depends on how closely hedge instrument matches underlying exposure.',example:'Airline hedges jet fuel cost with energy derivatives to reduce budget uncertainty.',calc:'Mini check: Unhedged fuel cost variance high; hedge reduces variance even if it can cap some upside benefit.',figure:'📘 In-book figure idea: company cash-flow distribution before vs after hedge.'},
+{id:'1.7',title:'Speculators',text:'Speculators intentionally take market risk to profit from expected price moves.',detail:'They add liquidity and take the opposite side of hedgers. Risk management (position size, stop-loss, margin discipline) is essential for survival.',example:'A trader goes long equity index futures expecting macro data to beat consensus.',calc:'Mini check: If leverage is 10x, a 1% adverse move can create ~10% equity drawdown.',figure:'📘 In-book figure idea: leveraged return distribution vs unlevered return.'},
+{id:'1.8',title:'Arbitrageurs',text:'Arbitrageurs exploit temporary mispricing between linked markets and help prices converge to fair relationships.',detail:'Classic no-arbitrage logic links spot, futures, rates, and carry costs. When mispricing appears, arbitrage trades push prices back into alignment.',example:'If futures is too high versus spot+carry, arbitrageur may short futures and buy spot (cash-and-carry).',calc:'Mini check: Theoretical futures F*=S·e^(rT). If market F > F*, potential arbitrage spread exists before costs.',figure:'📘 In-book figure idea: spot-vs-futures convergence chart near expiry.'}
+],quiz:[
 {type:'mcq',q:'What is the main difference between a forward and a futures contract?',options:['Forward is exchange-traded, futures is OTC.','Futures is standardized, forward is customizable.','They are exactly the same.','Only futures require delivery.'],a:'Futures is standardized, forward is customizable.',hint:'Think about exchange rules and contract standardization.'},
 {type:'mcq',q:'A call option has strike 100. Stock expires at 110. What is true?',options:['Do not exercise.','Exercise; intrinsic gain is 10 before premium.','Exercise; lose 10.','Must sell stock at 100.'],a:'Exercise; intrinsic gain is 10 before premium.',hint:'Call is valuable when market price is above strike.'},
 {type:'mcq',q:'Who seeks risk-free profit from pricing differences?',options:['Hedger','Speculator','Arbitrageur','Broker'],a:'Arbitrageur',hint:'They exploit price gaps across markets.'},
@@ -380,12 +403,25 @@ function renderContent(){
   th.style.display=currentTab==='theory'?'block':'none';
   calc.style.display=currentTab==='calculation'?'block':'none';
   pr.style.display=currentTab==='practice'?'block':'none';
+  const sectionsHtml = (lvl.theorySections&&lvl.theorySections.length)
+    ? `<div class="theory-sections">${lvl.theorySections.map((sec,idx)=>`<div class="theory-sec"><button class="theory-toggle" data-sec="${idx}">${sec.id} ${sec.title} ${idx===0?'(open)':''}</button><div class="theory-panel ${idx===0?'open':''}" data-panel="${idx}"><p>${sec.text}</p>${sec.detail?`<p>${sec.detail}</p>`:''}${sec.example?`<div class="theory-ex">🧠 Example: ${sec.example}</div>`:''}${sec.calc?`<div class="theory-calc">${sec.calc}</div>`:''}${sec.figure?`<div class="theory-fig">${sec.figure}</div>`:''}</div></div>`).join('')}</div>`
+    : '';
   th.innerHTML=`<p>Introduction to the course and its core concepts. In this section, you will learn the fundamental ideas that serve as the foundation for the rest of the course.</p>
   <ul class="theory-summary">${lvl.summary.map(s=>`<li>${s}</li>`).join('')}</ul>
+  ${sectionsHtml}
   <h4>Chapter starting page: ${chapterPages[selectedLevel]}</h4>
   <div class="pdf-tools"><a class="btn" href="options.pdf#page=${chapterPages[selectedLevel]}" target="_blank">Open Lecture Material (PDF)</a>
   <a class="btn" href="options.pdf" download>Download PDF</a></div>
   <iframe src="options.pdf#page=${chapterPages[selectedLevel]}"></iframe>`;
+
+  th.querySelectorAll('.theory-toggle').forEach(btn=>{
+    btn.onclick=()=>{
+      const idx=btn.getAttribute('data-sec');
+      const panel=th.querySelector(`[data-panel="${idx}"]`);
+      if(panel) panel.classList.toggle('open');
+    };
+  });
+
   renderMostImportantCalculation();
   renderPractice();
 }
@@ -429,6 +465,62 @@ function showResultPopup({ok,hint,onConfirm}){
   document.getElementById('popupClose').onclick=close;
 }
 
+function makeVizHtml(f, vals){
+  const eq = (f.equation||'').toLowerCase();
+
+  // 1) Call payoff mini chart
+  if(eq.includes('max(st - k, 0) - c')){
+    const K=vals.K, c=vals.c;
+    const xmin=Math.max(1, K*0.5), xmax=K*1.8;
+    const n=24;
+    const pts=[];
+    let ymin=Infinity, ymax=-Infinity;
+    for(let i=0;i<n;i++){
+      const x=xmin + (xmax-xmin)*i/(n-1);
+      const y=Math.max(x-K,0)-c;
+      ymin=Math.min(ymin,y); ymax=Math.max(ymax,y);
+      pts.push({x,y});
+    }
+    if(ymax===ymin){ymax=ymin+1;}
+    const mapX=x=>20 + ((x-xmin)/(xmax-xmin))*320;
+    const mapY=y=>110 - ((y-ymin)/(ymax-ymin))*90;
+    const poly=pts.map(p=>`${mapX(p.x)},${mapY(p.y)}`).join(' ');
+    const zeroY = mapY(0);
+    const strikeX = mapX(K);
+    return `<div class="viz"><div class="viz-title">📈 Long Call Payoff (profit vs expiry stock price)</div>
+      <svg viewBox="0 0 360 130" preserveAspectRatio="none">
+        <line x1="20" y1="110" x2="340" y2="110" stroke="#5060b2"/>
+        <line x1="20" y1="20" x2="20" y2="110" stroke="#5060b2"/>
+        <line x1="20" y1="${zeroY}" x2="340" y2="${zeroY}" stroke="#7f8bd6" stroke-dasharray="3 3"/>
+        <line x1="${strikeX}" y1="20" x2="${strikeX}" y2="110" stroke="#7f8bd6" stroke-dasharray="3 3"/>
+        <polyline fill="none" stroke="#7c83ff" stroke-width="2.5" points="${poly}"/>
+      </svg>
+      <div class="viz-note">Break-even ≈ K + c = ${numFmt(K+c)} | Strike K = ${numFmt(K)}</div></div>`;
+  }
+
+  // 2) Basis mini trend chart
+  if(eq.includes('b = s - f') || (vals.S!==undefined && vals.F!==undefined)){
+    const base=(vals.S??0)-(vals.F??0);
+    const steps=[base];
+    for(let i=1;i<6;i++){
+      steps.push(steps[i-1] + (Math.random()*8-4));
+    }
+    const ymin=Math.min(...steps)-2, ymax=Math.max(...steps)+2;
+    const mapX=i=>25 + (i/5)*315;
+    const mapY=v=>108 - ((v-ymin)/(ymax-ymin||1))*86;
+    const poly=steps.map((v,i)=>`${mapX(i)},${mapY(v)}`).join(' ');
+    return `<div class="viz"><div class="viz-title">📉 Basis Mini Chart (simulated movement)</div>
+      <svg viewBox="0 0 360 130" preserveAspectRatio="none">
+        <line x1="25" y1="108" x2="340" y2="108" stroke="#5060b2"/>
+        <line x1="25" y1="22" x2="25" y2="108" stroke="#5060b2"/>
+        <polyline fill="none" stroke="#4ade80" stroke-width="2.5" points="${poly}"/>
+      </svg>
+      <div class="viz-note">Current basis B = S - F = ${numFmt(base)} (S=${numFmt(vals.S)}, F=${numFmt(vals.F)})</div></div>`;
+  }
+
+  return '';
+}
+
 function renderMostImportantCalculation(){
   const pane=document.getElementById('calculationPane');
   const formulas = optionalCalculations[selectedLevel] || [];
@@ -442,6 +534,7 @@ function renderMostImportantCalculation(){
     f.ranges.forEach(([k,min,max,dec])=>vals[k]=randIn(min,max,dec));
     const expected=f.compute(vals);
     const varsHtml=f.ranges.map(([k])=>`<span class="vchip">${k} = ${numFmt(vals[k])}</span>`).join(' ');
+    const vizHtml=makeVizHtml(f, vals);
     return `
       <div class="formula-card" data-fidx="${idx}">
         <div class="qmeta"><span>${f.name}</span><span>Optional</span></div>
@@ -449,6 +542,7 @@ function renderMostImportantCalculation(){
         <p>${f.description}</p>
         <p><strong>Task:</strong> Calculate using the random values below (new values appear each time this tab is opened).</p>
         <div class="var-grid">${varsHtml}</div>
+        ${vizHtml}
         <div class="calc-input-row">
           <input type="text" data-input="${idx}" placeholder="Type like Excel: =100-200" />
           <button class="btn" data-check="${idx}">Check</button>
@@ -535,12 +629,16 @@ function renderPractice(){
       });
     }
     window.onkeydown=(e)=>{
+      const k=e.key.toLowerCase();
+      if(k==='arrowleft' || k==='a'){ goPrev(); return; }
+      if(k==='arrowright' || k==='d'){ goNext(); return; }
       if(results[selectedLevel][qIndex]) return;
       const n=Number(e.key);
       if(n>=1 && n<=q.options.length){
         selectedChoice=q.options[n-1];
         optionsEls.forEach(x=>x.classList.remove('selected'));
         if(optionsEls[n-1]) optionsEls[n-1].classList.add('selected');
+        evaluateAnswer(selectedChoice);
       }
       if(e.key==='Enter' && selectedChoice){
         evaluateAnswer(selectedChoice);
@@ -569,12 +667,19 @@ function renderPractice(){
       }
     };
     input.addEventListener('keydown',(e)=>{if(e.key==='Enter') submit();});
-    window.onkeydown=(e)=>{if(e.key==='Enter') submit();};
+    window.onkeydown=(e)=>{
+      const k=e.key.toLowerCase();
+      if(k==='arrowleft' || k==='a'){ goPrev(); return; }
+      if(k==='arrowright' || k==='d'){ goNext(); return; }
+      if(e.key==='Enter') submit();
+    };
   }
 
   document.getElementById('hintBtn').onclick=()=>document.getElementById('hint').classList.toggle('show');
-  document.getElementById('prev').onclick=()=>{qIndex=Math.max(0,qIndex-1);renderPractice();};
-  document.getElementById('next').onclick=()=>{qIndex=Math.min(lvl.quiz.length-1,qIndex+1);renderPractice();};
+  const goPrev=()=>{qIndex=Math.max(0,qIndex-1);renderPractice();};
+  const goNext=()=>{qIndex=Math.min(lvl.quiz.length-1,qIndex+1);renderPractice();};
+  document.getElementById('prev').onclick=goPrev;
+  document.getElementById('next').onclick=goNext;
 }
 function tryCompleteLevel(){
   const all=results[selectedLevel].every(Boolean);
