@@ -1,0 +1,700 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Derivatives Course Path</title>
+  <style>
+    :root{--bg:#0f1220;--panel:#171a2b;--panel2:#1e2240;--text:#e8ebff;--muted:#9aa3d3;--ok:#4ade80;--warn:#f59e0b;--lock:#64748b;--accent:#7c83ff}
+    *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,Arial;background:radial-gradient(circle at top,#1a1f3a 0,#0e1224 45%,#0a0d1a 100%);color:var(--text)}
+    .wrap{max-width:1200px;margin:0 auto;padding:24px}
+    h1{margin:0 0 8px} .subtitle{color:var(--muted);max-width:960px}
+    .layout{display:grid;grid-template-columns:360px 1fr;gap:20px;margin-top:18px;align-items:start}
+    .card{background:rgba(23,26,43,.9);border:1px solid #2a3160;border-radius:16px;padding:16px;backdrop-filter:blur(6px)}
+    .levels{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+    .level{position:relative;padding:12px;border-radius:14px;background:var(--panel2);border:1px solid #334089;cursor:pointer;transition:.25s transform,.25s opacity,.25s box-shadow}
+    .level:hover{transform:translateY(-2px)}
+    .level .name{font-size:13px;font-weight:700}.status{font-size:11px;color:var(--muted);margin-top:6px}
+    .level.locked{opacity:.45;filter:grayscale(0.25);cursor:not-allowed}.level.locked::after{content:"🔒";position:absolute;right:10px;top:8px}
+    .level.current{box-shadow:0 0 0 2px rgba(124,131,255,.5),0 0 16px rgba(124,131,255,.35)}
+    .level.completed{border-color:#2cb67d;background:linear-gradient(135deg,#1f3d39,#1e2b43)}
+    .level.completed::after{content:"🏅";position:absolute;right:10px;top:8px}
+    .unlock-pop{position:fixed;left:50%;top:20px;transform:translateX(-50%);padding:12px 18px;background:#1f9d63;color:white;border-radius:12px;border:1px solid #75f3b6;animation:pop 1.4s ease;z-index:10}
+    @keyframes pop{0%{opacity:0;transform:translateX(-50%) scale(.8)}15%{opacity:1}85%{opacity:1}100%{opacity:0;transform:translateX(-50%) scale(1.05)}}
+    .tabs{display:flex;gap:10px;margin-bottom:14px}.tab{padding:8px 12px;border-radius:999px;border:1px solid #334089;background:#1a2044;color:var(--text);cursor:pointer}
+    .tab.active{background:#2a3370}
+    .theory-summary{line-height:1.5;color:#dce2ff}.theory-summary li{margin:8px 0}
+    .theory-sections{margin-top:12px;display:grid;gap:10px}
+    .theory-sec{background:#141a36;border:1px solid #39458c;border-radius:10px;padding:10px}
+    .theory-sec h4{margin:0 0 6px;font-size:15px}
+    .theory-sec p{margin:0 0 6px;color:#dce2ff}
+    .theory-ex{font-size:13px;color:#9aa3d3}
+    .theory-toggle{width:100%;text-align:left;background:#1a2148;border:1px solid #4453aa;color:#e8ebff;border-radius:8px;padding:10px;cursor:pointer;font-weight:700}
+    .theory-panel{display:none;margin-top:8px;background:#101633;border:1px solid #2f3d88;border-radius:8px;padding:10px}
+    .theory-panel.open{display:block}
+    .theory-calc{margin-top:8px;padding:8px;border-radius:8px;background:#0f1a3b;border:1px solid #3e4c96;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#d5ddff}
+    .theory-fig{margin-top:8px;font-size:12px;color:#a8b1e7}
+    .pdf-tools{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+    .btn{padding:8px 12px;border-radius:10px;border:1px solid #4150a7;background:#27306b;color:#fff;cursor:pointer;text-decoration:none;display:inline-block}
+    iframe{width:100%;height:420px;border:1px solid #303870;border-radius:12px;background:#fff}
+    .qcard{background:#1a1f3f;border:1px solid #39458c;border-radius:14px;padding:14px}
+    .qmeta{color:var(--muted);font-size:12px;margin-bottom:6px;display:flex;justify-content:space-between}
+    .opt{display:block;margin:8px 0;padding:12px 44px 12px 12px;border:1px solid #3f4b95;border-radius:10px;cursor:pointer;position:relative}
+    .opt:hover{border-color:#5a68be}
+    .opt.selected{border-color:#8b9bff;background:rgba(124,131,255,.14)}
+    .opt input{display:none}
+    .keycap{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:12px;color:#9aa3d3;background:rgba(154,163,211,.12);border:1px solid rgba(154,163,211,.35);border-radius:6px;padding:1px 6px}
+    .hint{color:#ffd166;background:#352a0f;border:1px solid #7f6625;padding:8px;border-radius:8px;margin-top:8px;display:none}
+    .hint.show{display:block}
+    .feedback{margin-top:8px;font-weight:700}.good{color:var(--ok)}.bad{color:#f87171}
+    .nav{display:flex;gap:8px;margin-top:12px}
+    input[type="text"]{width:100%;padding:10px;border-radius:8px;border:1px solid #4755ab;background:#101633;color:white}
+    .progress{color:var(--muted);font-size:13px}
+    .formula-card{background:#141a36;border:1px solid #3a478f;border-radius:12px;padding:12px;margin-top:10px}
+    .formula-eq{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#0d1230;border:1px solid #2d3b83;padding:8px;border-radius:8px;display:inline-block}
+    .var-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-top:8px}
+    .vchip{background:#212a57;border:1px solid #4150a7;border-radius:999px;padding:4px 10px;font-size:12px;display:inline-block}
+    .calc-input-row{display:flex;gap:8px;align-items:center;margin-top:10px}
+    .calc-input-row input{flex:1}
+    .viz{margin-top:10px;background:#101633;border:1px solid #34408a;border-radius:10px;padding:8px}
+    .viz-title{font-size:12px;color:#9aa3d3;margin-bottom:6px}
+    .viz svg{width:100%;height:130px;display:block}
+    .viz-note{font-size:12px;color:#9aa3d3;margin-top:6px}
+    .popup-overlay{position:fixed;inset:0;background:rgba(3,6,22,.7);display:flex;align-items:center;justify-content:center;z-index:50}
+    .popup-card{width:min(520px,92vw);background:#171d3f;border:1px solid #4150a7;border-radius:14px;padding:16px;box-shadow:0 10px 35px rgba(0,0,0,.35)}
+    .popup-title{font-size:20px;font-weight:800;margin:0 0 8px}
+    .popup-hint{background:#352a0f;border:1px solid #7f6625;color:#ffd166;padding:10px;border-radius:10px;margin:10px 0}
+    .popup-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
+    .timer{color:var(--muted);font-size:13px}
+    .star-btn{padding:6px 10px;font-size:16px;line-height:1}
+    .focus-mode .wrap>h1,.focus-mode .wrap>.subtitle,.focus-mode #sidebarCard{display:none}
+    .focus-mode .layout{display:flex;justify-content:center;margin-top:0}
+    .focus-mode #contentCard{width:min(980px,96vw)}
+    .focus-mode .wrap{max-width:1100px}
+    @media (max-width:980px){.layout{grid-template-columns:1fr}.levels{grid-template-columns:repeat(3,1fr)}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Course Path</h1>
+  <p class="subtitle">This learning path is based on the structure of the Pricing and Forecasting course at BME and the textbook Options, Futures, and Other Derivatives. Learn step by step through structured levels. Each level begins with theory and is followed by practice exercises. The next level unlocks once you successfully complete the current one.</p>
+  <div class="layout">
+    <div class="card" id="sidebarCard">
+      <h3>Progress</h3>
+      <div id="progress" class="progress"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+        <h3 style="margin:0">Levels</h3>
+        <button id="toggleLevels" class="btn" style="padding:6px 10px">Collapse</button>
+      </div>
+      <div id="levels" class="levels" style="margin-top:10px"></div>
+    </div>
+    <div class="card" id="contentCard">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+        <h2 id="levelTitle" style="margin:0"></h2>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn star-btn" id="unlockStar" title="Unlock levels">⭐</button>
+          <button class="btn" id="focusToggle" style="padding:6px 10px">Focus Mode: Off</button>
+        </div>
+      </div>
+      <div class="tabs">
+        <button class="tab active" data-tab="theory">1) Theory</button>
+        <button class="tab" data-tab="calculation">2) Most Important Calculation</button>
+        <button class="tab" data-tab="practice">3) Practice Exercises</button>
+      </div>
+      <section id="theoryPane"></section>
+      <section id="calculationPane" style="display:none"></section>
+      <section id="practicePane" style="display:none"></section>
+    </div>
+  </div>
+</div>
+<div id="popupHost"></div>
+<script>
+const chapterPages = [23,46,71,99,126,154,174,207,222,235,256,276];
+const course = [
+{title:'Introduction',summary:['🌍 Derivatives trade in two worlds: exchange-traded (standardized, safer via clearinghouse) and OTC (flexible, customized).','📄 Forward = private custom agreement for future buy/sell at fixed price.','🏛️ Futures = exchange version of forward + daily margin settlement.','🎟️ Options give a right (not obligation): Call to buy, Put to sell, with a premium.','🧩 Trader roles: Hedgers reduce risk, Speculators take risk for profit, Arbitrageurs seek near risk-free pricing gaps.'],theorySections:[
+{id:'1.1',title:'Exchange-traded markets',text:'Exchange-traded derivatives use standardized contracts set by the exchange (quantity, quality, expiry dates). This makes trading fast and transparent, because everyone trades the same product specifications.',detail:'A clearing house stands between buyer and seller, which reduces direct counterparty risk. This is why exchange markets are preferred when high liquidity and low bilateral credit concern are important.',example:'If you buy one crude oil futures contract on an exchange, you accept a fixed contract size and listed maturity month, instead of negotiating these details manually.',calc:'Mini check: If contract size = 1,000 barrels and price moves +$2/barrel, P&L impact ≈ +$2,000 for one long contract.',figure:'📘 In-book figure idea: contract specification table (asset, size, delivery month) and clearing flow (buyer ↔ clearing house ↔ seller).'},
+{id:'1.2',title:'Over-the-counter (OTC) markets',text:'OTC markets are private dealer networks where contracts can be customized to exact business needs (amount, date, underlying, settlement style).',detail:'This flexibility is useful for corporates with non-standard exposures. The trade-off is higher bilateral credit risk, because performance depends on the specific counterparty unless centrally cleared.',example:'A company expecting a unique FX payment date can agree a tailored forward with its bank instead of using a standardized exchange contract.',calc:'Mini check: If a firm must hedge exactly 7.3M EUR for a custom date, OTC can set notional = 7.3M exactly (no rounding to contract lots).',figure:'📘 In-book figure idea: network diagram of institutions connected by bilateral OTC contracts.'},
+{id:'1.3',title:'Forward contracts',text:'A forward is a private agreement to buy/sell an asset at future date T for fixed delivery price K agreed today.',detail:'At initiation, value is typically near zero (fair pricing). Over time, value changes with market price movements. Forwards are often used for currencies, commodities, and rates in customized hedging.',example:'An importer locks USD purchase price today to reduce uncertainty in 6 months when invoice is due.',calc:'Example: If agreed K=100 and market at maturity is ST=108, long forward payoff ≈ ST-K = +8 per unit.',figure:'📘 In-book figure idea: linear forward payoff line crossing zero at K.'},
+{id:'1.4',title:'Futures contracts',text:'Futures are exchange-traded forwards with daily marking-to-market. Gains/losses are settled each day through margin accounts.',detail:'Because losses are realized daily, credit build-up is reduced compared with a single settlement at maturity. Initial and maintenance margin protect the system against default.',example:'If futures price drops while you are long, your margin account decreases immediately and may trigger a margin call.',calc:'Example: Long 2 contracts, size 100 each, daily change = -3 → P&L = 2×100×(-3) = -600 (debited today).',figure:'📘 In-book figure idea: timeline showing daily settlement cash flows into/out of margin account.'},
+{id:'1.5',title:'Options (Call / Put)',text:'Options provide asymmetry: the holder has a right but not an obligation. This creates limited downside for buyer and nonlinear payoff.',detail:'Call gives right to buy at strike K; put gives right to sell at K. Buyer pays premium upfront. Writer receives premium but takes obligation if exercised.',example:'Buying a call can be used as upside participation with capped loss equal to premium.',calc:'Example (long call): K=100, premium=4, ST=112 → profit = max(112-100,0)-4 = 8.',figure:'📘 In-book figure idea: hockey-stick payoff for long call and long put.'},
+{id:'1.6',title:'Hedgers',text:'Hedgers reduce risk in existing business positions (inventory, FX receivables/payables, funding costs).',detail:'Goal is stability, not maximizing speculative profit. Hedge effectiveness depends on how closely hedge instrument matches underlying exposure.',example:'Airline hedges jet fuel cost with energy derivatives to reduce budget uncertainty.',calc:'Mini check: Unhedged fuel cost variance high; hedge reduces variance even if it can cap some upside benefit.',figure:'📘 In-book figure idea: company cash-flow distribution before vs after hedge.'},
+{id:'1.7',title:'Speculators',text:'Speculators intentionally take market risk to profit from expected price moves.',detail:'They add liquidity and take the opposite side of hedgers. Risk management (position size, stop-loss, margin discipline) is essential for survival.',example:'A trader goes long equity index futures expecting macro data to beat consensus.',calc:'Mini check: If leverage is 10x, a 1% adverse move can create ~10% equity drawdown.',figure:'📘 In-book figure idea: leveraged return distribution vs unlevered return.'},
+{id:'1.8',title:'Arbitrageurs',text:'Arbitrageurs exploit temporary mispricing between linked markets and help prices converge to fair relationships.',detail:'Classic no-arbitrage logic links spot, futures, rates, and carry costs. When mispricing appears, arbitrage trades push prices back into alignment.',example:'If futures is too high versus spot+carry, arbitrageur may short futures and buy spot (cash-and-carry).',calc:'Mini check: Theoretical futures F*=S·e^(rT). If market F > F*, potential arbitrage spread exists before costs.',figure:'📘 In-book figure idea: spot-vs-futures convergence chart near expiry.'}
+],quiz:[
+{type:'mcq',q:'What is the main difference between a forward and a futures contract?',options:['Forward is exchange-traded, futures is OTC.','Futures is standardized, forward is customizable.','They are exactly the same.','Only futures require delivery.'],a:'Futures is standardized, forward is customizable.',hint:'Think about exchange rules and contract standardization.'},
+{type:'mcq',q:'A call option has strike 100. Stock expires at 110. What is true?',options:['Do not exercise.','Exercise; intrinsic gain is 10 before premium.','Exercise; lose 10.','Must sell stock at 100.'],a:'Exercise; intrinsic gain is 10 before premium.',hint:'Call is valuable when market price is above strike.'},
+{type:'mcq',q:'Who seeks risk-free profit from pricing differences?',options:['Hedger','Speculator','Arbitrageur','Broker'],a:'Arbitrageur',hint:'They exploit price gaps across markets.'},
+{type:'mcq',q:'Who mainly reduces business risk?',options:['Hedger','Speculator','Arbitrageur','Daytrader'],a:'Hedger',hint:'Hedge = protection.'},
+{type:'calc',q:'Short put written at strike 30, premium 4. Maximum profit?',a:'4',hint:'Option writer max gain is premium received.'},
+{type:'mcq',q:'Which market is direct customized dealing between parties?',options:['Exchange-traded','OTC','Supermarket','Auction house'],a:'OTC',hint:'Over-the-counter is off-exchange.'},
+{type:'calc',q:'Need to pay 1,000,000 CAD. Forward rate 1 USD = 1.25 CAD. USD cost?',a:'800000',hint:'Divide CAD amount by CAD per USD.'},
+{type:'mcq',q:'What is option premium?',options:['Strike','Expiry value','Price paid for option right','Exchange commission'],a:'Price paid for option right',hint:'You pay upfront for the right.'},
+{type:'calc',q:'Call strike 20 bought for 2, stock at expiry 25. Net profit?',a:'3',hint:'(Spot - Strike) - Premium'},
+{type:'mcq',q:'As futures contract nears expiry, futures price...',options:['Goes to zero','Converges to spot','Always above spot','Unrelated to spot'],a:'Converges to spot',hint:'At delivery they must align.'}
+]},
+{title:'Mechanics of Futures Markets',summary:['Exchanges define contract specs: asset, size, delivery place/time.','Futures converge to spot near delivery due to arbitrage.','Margin system: initial margin, maintenance margin, daily mark-to-market.','Many OTC trades now clear via CCPs to reduce systemic credit risk.','Forwards are private + end-settled; futures are standardized + daily settled.'],quiz:[
+{type:'mcq',q:'As delivery month approaches, futures price...',options:['Stays above spot','Converges to spot','Drops to zero','Becomes random'],a:'Converges to spot',hint:'Think arbitrage between immediate and future buy/sell.'},
+{type:'mcq',q:'After margin call, account must be topped up to...',options:['Maintenance margin','Initial margin','Double initial','Day loss only'],a:'Initial margin',hint:'Top-up returns account to starting required level.'},
+{type:'calc',q:'Long 2 gold futures at 1450, 100 oz each. Next day 1441. Initial margin total 12000. New margin balance?',a:'10200',hint:'Loss = price drop × total ounces.'},
+{type:'mcq',q:'Daily gain/loss adjustment of margin account is called...',options:['Margin calling','Hedging','Marking to market','Arbitraging'],a:'Marking to market',hint:'Done every day on futures.'},
+{type:'mcq',q:'Customized private contracts are usually traded in...',options:['Futures market','OTC market','Stock exchange','Commodities exchange'],a:'OTC market',hint:'Customized is opposite of standardized.'},
+{type:'mcq',q:'Who chooses delivery grade/location in many futures?',options:['Exchange','Long position','Short position'],a:'Short position',hint:'Seller usually has delivery options.'},
+{type:'calc',q:'OJ futures bought at 160 cents/lb, contract 15000 lbs, init 6000 maint 4500. Margin call below what price (cents/lb)?',a:'150',hint:'Allowed loss = initial - maintenance.'},
+{type:'mcq',q:'Main role of CCP in OTC?',options:['Set rates','Middleman reducing credit risk','Lend to speculators','Deliver commodities'],a:'Middleman reducing credit risk',hint:'Like exchange clearing house.'},
+{type:'mcq',q:'Which is NOT standardized in futures?',options:['Delivery location','Contract size','Price','Asset quality'],a:'Price',hint:'Price is discovered by trading.'},
+{type:'calc',q:'Margin account 10000, initial margin 8000, profit today 3000. How much can be withdrawn?',a:'5000',hint:'Withdraw excess above initial margin.'}
+]},
+{title:'Hedging Strategies Using Futures',summary:['Long hedge protects future purchase; short hedge protects future sale.','Basis = Spot - Futures; changing basis creates basis risk.','Cross hedge uses related but not identical futures.','Optimal hedge ratio uses correlation and relative volatilities.','Index futures hedge portfolio market beta exposure.'],quiz:[
+{type:'mcq',q:'When should a company use a long hedge?',options:['Owns asset to sell later','Will buy asset later and fears price increase','Speculate on crash','Increase rate exposure'],a:'Will buy asset later and fears price increase',hint:'Long futures = commitment to buy.'},
+{type:'calc',q:'Hedge 100000 barrels, futures size 1000. Number and side?',a:'100 short',hint:'Selling asset later -> short futures.'},
+{type:'mcq',q:'Basis definition?',options:['Futures - Spot','Spot - Futures','Strike - Spot','Initial - Maintenance'],a:'Spot - Futures',hint:'S minus F.'},
+{type:'calc',q:'Basis from +2 to +1. What happened?',a:'weakened',hint:'A decrease in basis is weakening.'},
+{type:'mcq',q:'Cross hedging means...',options:['Two exchanges at once','Hedge using related but different asset futures','Two currencies','Use options and futures'],a:'Hedge using related but different asset futures',hint:'No exact contract available.'},
+{type:'calc',q:'rho=0.75, sigma_s=0.60, sigma_f=0.90. Optimal hedge ratio?',a:'0.5',hint:'h*=rho*(sigma_s/sigma_f)'},
+{type:'mcq',q:'Selling index futures against beta=1.2 portfolio aims to...',options:['Remove unsystematic risk','Reduce systematic market risk','Increase profit potential','Raise beta to 2'],a:'Reduce systematic market risk',hint:'Beta measures market sensitivity.'},
+{type:'calc',q:'Portfolio 5,000,000 beta 1.5, futures price 2500, multiplier 50. Contracts?',a:'60',hint:'beta * (portfolio/futures value)'},
+{type:'mcq',q:'Tailing the hedge adjusts for...',options:['Inflation','Daily settlement interest effect','American/European difference','Commissions'],a:'Daily settlement interest effect',hint:'Cash flows occur daily.'},
+{type:'mcq',q:'Main risk for short hedge?',options:['Asset price rise','Asset price fall','Basis strengthens','Basis weakens'],a:'Basis weakens',hint:'Falling basis hurts short hedger outcome.'}
+]},
+{title:'Interest Rates',summary:['Key rates: Treasury, LIBOR/RFR, repo.','Compounding frequency matters; continuous compounding is standard in derivatives.','Zero rates discount cash flows by maturity.','Bootstrapping derives zero curve from coupon bonds.','Duration and convexity estimate rate sensitivity.'],quiz:[
+{type:'mcq',q:'Which compounding gives highest FV for same annual rate?',options:['Annual','Semiannual','Quarterly','Continuous'],a:'Continuous',hint:'More frequent compounding grows faster.'},
+{type:'calc',q:'12% p.a. quarterly compounding => equivalent continuous rate?',a:'11.82',hint:'Rc = m ln(1+Rm/m)'},
+{type:'mcq',q:'Repo rate is...',options:['Tax on interest','Rate in repurchase agreement','Credit card rate','Zero-coupon yield'],a:'Rate in repurchase agreement',hint:'Sell security now, buy back later.'},
+{type:'calc',q:'1y zero=3%, 2y zero=4% cont comp. Forward for year 2?',a:'5',hint:'(R2T2-R1T1)/(T2-T1)'},
+{type:'mcq',q:'Bootstrap method is used to...',options:['Get risk-free from stocks','Derive zero rates from coupon bonds','Predict crashes','Remove inflation'],a:'Derive zero rates from coupon bonds',hint:'Step-by-step from short maturities.'},
+{type:'calc',q:'Bond CFs: 10 at y1, 110 at y2. Zero1=5%, zero2=6% annual. Price?',a:'107.41',hint:'Discount each cash flow with matching zero rate.'},
+{type:'mcq',q:'In FRA, market rate > fixed rate at settlement. Who benefits?',options:['Fixed-rate payer','Fixed-rate receiver','Both','Neither'],a:'Fixed-rate payer',hint:'Borrower locked lower fixed than market.'},
+{type:'mcq',q:'Duration measures...',options:['Time to last payment','Credit risk','Price sensitivity to rate changes','Annual profit'],a:'Price sensitivity to rate changes',hint:'Higher duration, larger response.'},
+{type:'calc',q:'100 invested 2 years at 5% continuous. Maturity value?',a:'110.52',hint:'FV=P*e^(RT)'},
+{type:'mcq',q:'Liquidity preference theory says upward curve because...',options:['Long bonds safer','Investors need premium for lower liquidity/long horizon','Rates always rise','Banks lend more long term'],a:'Investors need premium for lower liquidity/long horizon',hint:'Longer lock-up requires extra return.'}
+]},
+{title:'Determination of Forward and Futures Prices',summary:['Investment assets vs consumption assets have different pricing nuances.','Core forward formula uses spot, rates, time, and income/carry.','Forward value evolves over time from zero at initiation.','Currency forwards follow interest rate parity.','Convenience yield can depress commodity forward price.'],quiz:[
+{type:'mcq',q:'Which is a consumption asset?',options:['Google stock','10-year Treasury','Crude oil','Gold'],a:'Crude oil',hint:'Used as input/consumption rather than pure investment.'},
+{type:'calc',q:'S=40, r=5%, T=0.25, no dividends. Forward price?',a:'40.50',hint:'F0=S*e^(rT)'},
+{type:'mcq',q:'Higher storage costs for commodity forward price?',options:['Decrease','Increase','No effect','Equal to spot'],a:'Increase',hint:'Storage is part of cost of carry.'},
+{type:'calc',q:'S=1.10 USD/EUR, r=2%, rf=4%, T=1. Forward?',a:'1.0782',hint:'F=S*e^((r-rf)T)'},
+{type:'mcq',q:'Convenience yield means...',options:['Arbitrage profit','Benefit of holding physical asset','Margin interest','Shipping cost'],a:'Benefit of holding physical asset',hint:'Inventory can give operational benefit.'},
+{type:'calc',q:'Long forward K=60, current forward 65, r=4%, T=0.5. Value?',a:'4.90',hint:'(F-K)e^(-rT)'},
+{type:'mcq',q:'Known dollar income on asset affects forward by...',options:['Increasing','Decreasing','No change','Negative forward'],a:'Decreasing',hint:'Income is missed by forward holder.'},
+{type:'calc',q:'Gold spot 2000, r=5%, storage 10 at year-end. 1y forward?',a:'2110.25',hint:'Treat storage as negative income.'},
+{type:'mcq',q:'Arbitrage opportunity is...',options:['Slow loss','High-risk trade','Certain profit with zero net investment','Buy and hold 10 years'],a:'Certain profit with zero net investment',hint:'Finance free lunch.'},
+{type:'calc',q:'Index=4000, q=3%, r=7%, T=0.5. Futures price?',a:'4080.81',hint:'F=S*e^((r-q)T)'}]},
+{title:'Interest Rate Futures',summary:['Day count conventions: Actual/Actual, 30/360, Actual/360.','Treasury futures use conversion factors + cheapest-to-deliver logic.','Eurodollar futures quote is 100-R, with $25 per bp per contract.','Duration-based hedging sets number of contracts via DV01-like matching.','Rates up means Eurodollar futures price down.'],quiz:[
+{type:'calc',q:'Treasury quote 102-12 => cash price?',a:'102.375',hint:'Add 12/32.'},
+{type:'calc',q:'Short 10 Eurodollar futures, quote 96.00->95.90. P/L?',a:'2500',hint:'10 bps × $25 × 10 contracts.'},
+{type:'mcq',q:'US Treasury day count convention?',options:['30/360','Actual/360','Actual/Actual','Actual/365'],a:'Actual/Actual',hint:'Treasuries use precise day counting.'},
+{type:'mcq',q:'Cheapest-to-deliver bond is...',options:['Lowest coupon','Shortest maturity','Least costly for short to deliver','Highest conversion factor'],a:'Least costly for short to deliver',hint:'Seller chooses economically best delivery.'},
+{type:'calc',q:'P=10,000,000 Dp=8 Vf=100,000 Df=10. Contracts?',a:'80',hint:'N=(P*Dp)/(Vf*Df)'},
+{type:'mcq',q:'If rates rise, Eurodollar futures price...',options:['Increases','Decreases','Unchanged','Equals spot'],a:'Decreases',hint:'Quote=100-R.'},
+{type:'calc',q:'91-day T-bill discount 4% (Actual/360). Price per 100 face?',a:'98.988',hint:'100*(1-d*t/360)'},
+{type:'mcq',q:'Conversion factor 1.10 often implies...',options:['10% expensive','Higher-than-standard coupon profile','Duration 1.10','10% delivery discount'],a:'Higher-than-standard coupon profile',hint:'Adjusts to 6% standard bond.'},
+{type:'mcq',q:'Duration hedge mainly protects against...',options:['All risk','Parallel yield curve shifts','Tax risk','Dividend changes'],a:'Parallel yield curve shifts',hint:'Duration assumes small parallel moves.'},
+{type:'calc',q:'Bond price 1100, duration 6, rate rise 0.1% (0.001). Estimated ΔP?',a:'-6.6',hint:'ΔP≈-P*D*Δy'}]},
+{title:'Swaps',summary:['Plain vanilla interest rate swap exchanges fixed vs floating on notional principal.','Comparative advantage can lower borrowing costs via swap structuring.','Swap value can be viewed as fixed-bond minus floating-bond value.','Currency swaps commonly exchange principal at start and end.','Credit risk rises when swap MTM is positive to you.'],quiz:[
+{type:'mcq',q:'In plain vanilla IRS, what is exchanged?',options:['Two fixed rates','Fixed vs floating interest','Only principal in two currencies','Stock return for bond return'],a:'Fixed vs floating interest',hint:'Most common loan transformation structure.'},
+{type:'calc',q:'Pay fixed 4%, receive LIBOR 4.5% on 10m notional for 6 months. Net payment for this period?',a:'25000',hint:'Notional*(0.045-0.04)*0.5'},
+{type:'mcq',q:'Key principal difference vs currency swap?',options:['Only IRS exchanges principal','Neither exchanges principal','Currency swaps usually exchange principal start/end','IRS exchanges principal only at end'],a:'Currency swaps usually exchange principal start/end',hint:'Need funding in actual foreign currency.'},
+{type:'calc',q:'Currency swap receive USD 5% on $12m annually. USD interest received each year?',a:'600000',hint:'Principal × rate.'},
+{type:'mcq',q:'Why swap value is near zero at inception?',options:['No interest earned yet','Fixed rate set so PV fixed leg equals PV floating leg','No principal exchange yet','Bank fee offsets'],a:'Fixed rate set so PV fixed leg equals PV floating leg',hint:'Fair swap starts at zero NPV.'},
+{type:'calc',q:'Loan LIBOR+1%. Swap pay fixed 5 receive LIBOR. Effective rate?',a:'6',hint:'(LIBOR+1)+5-LIBOR'},
+{type:'mcq',q:'Comparative advantage argument says...',options:['One country banks better','Borrow where relatively cheaper then swap','Swaps only for MNCs','Fixed always better'],a:'Borrow where relatively cheaper then swap',hint:'Exploit relative market strengths.'},
+{type:'calc',q:'Currency swap principal exchange today: receive 100m JPY and pay $1m. Spot 110 JPY/USD. Net value in USD?',a:'-90909',hint:'100m/110 - 1,000,000'},
+{type:'mcq',q:'If rates move in your favor, swap credit risk...',options:['Decreases','Increases','Unchanged','Disappears'],a:'Increases',hint:'You have more receivable exposure to counterparty default.'},
+{type:'mcq',q:'Equity swap is...',options:['Exchange shares directly','Exchange equity return for fixed/floating interest','Sell stocks for bonds','Principal in shares'],a:'Exchange equity return for fixed/floating interest',hint:'Synthetic equity exposure.'}
+]},
+{title:'Securitization and the Credit Crisis of 2007',summary:['Securitization pools illiquid loans into tradable securities.','SPV issues tranches: senior, mezzanine, equity.','CDOs re-securitized lower tranches and amplified systemic fragility.','2007-08 crisis driven by housing decline + correlated defaults.','Incentive failures, leverage, complexity, and ratings failures worsened losses.'],quiz:[
+{type:'mcq',q:'Originate-to-distribute model means...',options:['Banks keep loans until maturity','Banks originate loans then sell risk via securitization','Government originates all mortgages','Borrowers pay many banks'],a:'Banks originate loans then sell risk via securitization',hint:'Banks move risk off balance sheet.'},
+{type:'mcq',q:'Which ABS tranche absorbs losses first?',options:['Senior','Mezzanine','Equity','AAA'],a:'Equity',hint:'Bottom tranche takes first hit.'},
+{type:'mcq',q:'SPV is...',options:['Armored truck','Legal entity holding assets and issuing securities','Central bank office','Mortgage insurance policy'],a:'Legal entity holding assets and issuing securities',hint:'Ring-fenced entity.'},
+{type:'mcq',q:'Why did senior CDO tranches fail?',options:['Rates went to zero','Defaults were highly correlated','Gov stopped printing','Fees unpaid'],a:'Defaults were highly correlated',hint:'Diversification assumption broke.'},
+{type:'calc',q:'Portfolio 100m. Equity tranche 5%. Loss 3m. Which tranche hit and by how much?',a:'equity 3000000',hint:'Losses flow bottom-up.'},
+{type:'mcq',q:'Subprime mortgage is...',options:['High down-payment loan','Loan to lower-credit borrower','0% gov loan','Second-home loan'],a:'Loan to lower-credit borrower',hint:'Below prime credit quality.'},
+{type:'calc',q:'Portfolio 200m, equity 10m. Total loss 25m. Mezzanine loss?',a:'15000000',hint:'After equity wiped out, remainder hits mezz.'},
+{type:'mcq',q:'Teaser rate means...',options:['High initial rate','Low intro rate then resets higher','Broker prize','Savings account rate'],a:'Low intro rate then resets higher',hint:'Initially attractive, later expensive.'},
+{type:'mcq',q:'Ratings agencies criticized because...',options:['Too strict','Gave AAA to risky complex products','Too cheap','Only US operation'],a:'Gave AAA to risky complex products',hint:'Models underestimated systemic risk.'},
+{type:'mcq',q:'Moral hazard in bailouts means...',options:['Banks too ethical','Banks take excess risk expecting rescue','Borrower refuses loan','Stocks rise fast'],a:'Banks take excess risk expecting rescue',hint:'Safety net changes behavior.'}
+]},
+{title:'OIS Discounting, Credit Issues, and Funding Costs',summary:['Central banks steer economy with short-term policy rates.','LIBOR embeds bank credit risk; OIS is closer to risk-free discounting base.','LIBOR-OIS spread spike in crisis signaled trust breakdown.','Post-crisis pricing shifted to OIS (SOFR-based curves in USD).','Transition from LIBOR to RFRs is global standard.'],quiz:[
+{type:'mcq',q:'OIS stands for?',options:['Optional Interest System','Overnight Indexed Swap','Official Interbank Standard','Open Interest Settlement'],a:'Overnight Indexed Swap',hint:'Swap fixed vs compounded overnight index.'},
+{type:'mcq',q:'Why is LIBOR riskier than OIS?',options:['Only long-term','Includes bank credit risk','OIS is government-set','Different currency'],a:'Includes bank credit risk',hint:'LIBOR reflects unsecured bank borrowing.'},
+{type:'mcq',q:'LIBOR-OIS spread during 2008 crisis...',options:['Stayed 0','Fell','Spiked','Turned negative'],a:'Spiked',hint:'Banks feared counterparty default.'},
+{type:'calc',q:'LIBOR 4.50%, OIS 3.80%. Spread in bps?',a:'70',hint:'0.70% = 70 bps.'},
+{type:'mcq',q:'Main USD LIBOR replacement?',options:['EURIBOR','NASDAQ-100','SOFR','Prime rate'],a:'SOFR',hint:'Secured overnight financing rate.'},
+{type:'mcq',q:'Fed main policy implementation tool?',options:['Gold price','Federal funds rate','Fix dollar FX','Issue corp bonds'],a:'Federal funds rate',hint:'Overnight interbank target.'},
+{type:'mcq',q:'In OIS, if floating average overnight > fixed rate, who benefits?',options:['Fixed-rate payer benefits','Fixed-rate receiver benefits'],a:'Fixed-rate payer benefits',hint:'Receiving floating, paying fixed wins.'},
+{type:'mcq',q:'Why OIS discounting became standard?',options:['Easier math','Better risk-free proxy','LIBOR illegal','Tax reasons'],a:'Better risk-free proxy',hint:'Discount with near risk-free curve.'},
+{type:'mcq',q:'Term rate means...',options:['Rate for a specific tenor (e.g., 3M)','Loan termination rate','Final-year only rate','ATM terminal rate'],a:'Rate for a specific tenor (e.g., 3M)',hint:'Applies over defined period.'},
+{type:'mcq',q:'Switch discount rate from 5% LIBOR to 4.8% OIS for future inflows. PV...',options:['Decreases','Increases'],a:'Increases',hint:'Lower discount rate => higher PV.'}
+]},
+{title:'Mechanics of Options Markets',summary:['Calls and puts define rights to buy/sell at strike by expiry.','Four positions: long/short call, long/short put.','Moneyness: ITM, ATM, OTM.','Option value = intrinsic + time value.','Contract specs include strike grid, expiry, contract size, adjustments.'],quiz:[
+{type:'mcq',q:'American vs European option difference?',options:['Only US trading','European exercisable anytime','American exercisable anytime until expiry; European only at expiry','European always cheaper'],a:'American exercisable anytime until expiry; European only at expiry',hint:'Exercise flexibility differs.'},
+{type:'calc',q:'Buy call K=50 for 3. Stock at expiry 55. Net profit?',a:'2',hint:'(55-50)-3'},
+{type:'mcq',q:'Writing an option means...',options:['Buying option','Selling option','Registering company','Hedging with futures'],a:'Selling option',hint:'Writer is short option.'},
+{type:'calc',q:'2-for-1 split: one call contract, K=100 on 100 shares. New terms?',a:'2 contracts 50',hint:'Strike halves, quantity doubles.'},
+{type:'mcq',q:'Option is ITM when...',options:['Strike = stock','Premium high','Immediate exercise gives positive payoff','Expiry far away'],a:'Immediate exercise gives positive payoff',hint:'ITM has intrinsic value.'},
+{type:'calc',q:'Buy put K=30 for 2. Break-even stock price?',a:'28',hint:'K - premium.'},
+{type:'mcq',q:'Put intrinsic value is...',options:['max(0,S-K)','max(0,K-S)','Always premium','Time remaining'],a:'max(0,K-S)',hint:'Put gains when strike exceeds spot.'},
+{type:'calc',q:'Call K=80, stock=84, premium=6. Time value?',a:'2',hint:'Premium - intrinsic (84-80).'},
+{type:'mcq',q:'Who has obligation if option exercised?',options:['Holder','Exchange','Writer','No one'],a:'Writer',hint:'Buyer has right, seller has obligation.'},
+{type:'mcq',q:'Max possible loss for naked short call?',options:['Limited to premium','Limited to strike','Unlimited','Zero'],a:'Unlimited',hint:'Stock can rise without upper bound.'}
+]},
+{title:'Properties of Stock Options',summary:['Option values depend on S, K, T, volatility, rates, dividends.','Higher volatility generally lifts both calls and puts.','Put-call parity links call, put, stock, and discounted strike.','Bounds prevent impossible mispricing.','American call on non-dividend stock is usually not exercised early.'],quiz:[
+{type:'mcq',q:'If volatility rises, option prices...',options:['Only calls up','Only puts up','Both calls and puts up','Both down'],a:'Both calls and puts up',hint:'More movement helps option holders.'},
+{type:'calc',q:'European call lower bound with S=52, K=50, r=4%, T=0.5?',a:'2.98',hint:'S-Ke^{-rT}'},
+{type:'mcq',q:'Upper bound for European put?',options:['S0','r','K','Ke^{-rT}'],a:'Ke^{-rT}',hint:'Cannot exceed discounted max payoff.'},
+{type:'calc',q:'S=100, call=10, K=100, r=5%, T=1. Put via parity?',a:'5.12',hint:'p=c+Ke^{-rT}-S'},
+{type:'mcq',q:'Early exercise of American call on non-dividend stock is usually suboptimal because...',options:['Lose downside insurance','Lose interest on strike cash','Option keeps time value','All of the above'],a:'All of the above',hint:'Holding option is usually better than early exercise.'},
+{type:'mcq',q:'If parity side c+Ke^{-rT}=15 and p+S=17, arbitrage idea?',options:['Buy expensive side','Buy cheap side and sell expensive side'],a:'Buy cheap side and sell expensive side',hint:'Buy low, sell high.'},
+{type:'mcq',q:'Dividends generally affect call prices by...',options:['Increasing','Decreasing','No effect','Equal to strike'],a:'Decreasing',hint:'Ex-dividend drop in stock hurts calls.'},
+{type:'mcq',q:'American put K=40 priced 5, stock 32. Immediate arbitrage?',options:['Yes','No'],a:'Yes',hint:'Intrinsic value 8 > market price 5.'},
+{type:'mcq',q:'If risk-free rate rises, put price tends to...',options:['Increase','Decrease','No change'],a:'Decrease',hint:'PV of strike falls.'},
+{type:'mcq',q:'With dividends before expiry, parity uses...',options:['Same formula unchanged','Replace S0 with S0-PV(dividends)'],a:'Replace S0 with S0-PV(dividends)',hint:'Adjust stock leg for known payouts.'}
+]},
+{title:'Trading Strategies Involving Options',summary:['Covered call earns premium but caps upside.','Protective put insures downside.','Spreads shape bounded bullish/bearish payoffs.','Straddles/strangles trade volatility direction uncertainty.','Butterfly targets low-volatility range-bound outcome.'],quiz:[
+{type:'mcq',q:'Primary goal of covered call?',options:['Profit from huge rally','Protect from 50% crash','Generate income in flat/slightly up market','Remove all risk'],a:'Generate income in flat/slightly up market',hint:'Premium income, capped upside.'},
+{type:'calc',q:'Own stock at 50 + protective put K45 cost 2. Stock crashes to 30. Position value per share?',a:'43',hint:'Put floor at 45 minus premium 2.'},
+{type:'mcq',q:'Best when expecting very large move but unknown direction?',options:['Bull spread','Butterfly','Long straddle','Covered call'],a:'Long straddle',hint:'Buy call + put same strike.'},
+{type:'calc',q:'Bull call spread: buy K50 call for4, sell K60 call for1. Max profit?',a:'7',hint:'(60-50)-(4-1)'},
+{type:'mcq',q:'Butterfly spread view?',options:['Skyrocket','Crash','Stay near middle strike','Volatility surge'],a:'Stay near middle strike',hint:'Neutral range strategy.'},
+{type:'calc',q:'Straddle K100 total premium 8. Break-even prices?',a:'92 108',hint:'K±premium'},
+{type:'mcq',q:'Strangle differs from straddle because...',options:['Only puts','Different strikes, usually cheaper','Only American options','Unlimited both unlike straddle'],a:'Different strikes, usually cheaper',hint:'OTM options reduce cost.'},
+{type:'calc',q:'Bear put spread buy K70 put for5 sell K60 put for2. Max loss?',a:'3',hint:'Net premium paid.'},
+{type:'mcq',q:'A strap is...',options:['Straddle with two calls + one put','Bull spread with puts','Four-strike strategy','Sell options to buy stock'],a:'Straddle with two calls + one put',hint:'Upside-biased volatility bet.'},
+{type:'mcq',q:'Max loss for short straddle?',options:['Premium only','Strike amount','Unlimited','Zero'],a:'Unlimited',hint:'Large move can create huge losses.'}
+]}
+];
+
+const optionalCalculations = {
+  0:[{name:'Intro Quick Check',equation:'Basis = S - F',description:'Optional warm-up: measure the difference between spot and futures.',ranges:[['S',100,500,0],['F',95,480,0]],compute:v=>v.S-v.F}],
+  1:[{name:'Futures Convergence Check',equation:'Basis = S - F',description:'Optional check of spot-futures gap in mechanics chapter.',ranges:[['S',100,500,0],['F',95,480,0]],compute:v=>v.S-v.F}],
+  2:[
+    {name:'Formula 1: Basis',equation:'B = S - F',description:'Measures the difference between the local cash price (Spot) and the futures price. Hedgers are exposed to basis risk.',ranges:[['S',100,500,0],['F',95,480,0]],compute:v=>v.S-v.F},
+    {name:'Formula 2: Optimal Hedge Ratio (h*)',equation:'h* = rho * (sigma_S / sigma_F)',description:'The ratio of futures to spot exposure that minimizes hedged variance.',ranges:[['rho',0.60,0.95,2],['sigma_S',0.10,0.30,2],['sigma_F',0.15,0.40,2]],compute:v=>v.rho*(v.sigma_S/v.sigma_F)},
+    {name:'Formula 3: Number of Contracts for Equity Hedging (N)',equation:'N = beta * (V_P / V_F)',description:'Determines how many index futures contracts hedge a portfolio’s systematic risk.',ranges:[['beta',0.8,1.5,2],['V_P',1000000,10000000,0],['V_F',50000,250000,0]],compute:v=>v.beta*(v.V_P/v.V_F)}
+  ],
+  3:[
+    {name:'Formula 1: Continuous Compounding (Future Value)',equation:'A = P * e^(r*T)',description:'Future value with continuously compounded interest.',ranges:[['P',1000,50000,0],['r',0.02,0.08,3],['T',0.5,10,2]],compute:v=>v.P*Math.exp(v.r*v.T)},
+    {name:'Formula 2: Forward Interest Rate (Rf)',equation:'Rf = (R2*T2 - R1*T1) / (T2 - T1)',description:'Forward rate implied by zero rates.',ranges:[['T1',0.5,1.0,2],['T2',1.5,3.0,2],['R1',0.01,0.04,3],['R2',0.02,0.06,3]],compute:v=>(v.R2*v.T2-v.R1*v.T1)/(v.T2-v.T1)}
+  ],
+  4:[
+    {name:'Formula 1: Forward Price (No Income)',equation:'F0 = S0 * e^(r*T)',description:'Fair forward price using carry from financing cost.',ranges:[['S0',50,200,2],['r',0.01,0.05,3],['T',0.25,2,2]],compute:v=>v.S0*Math.exp(v.r*v.T)},
+    {name:'Formula 2: Forward Price (Known Yield)',equation:'F0 = S0 * e^((r - q)*T)',description:'Forward price adjusted by dividend/income yield.',ranges:[['S0',1000,4500,2],['r',0.03,0.06,3],['q',0.01,0.03,3],['T',0.5,1,2]],compute:v=>v.S0*Math.exp((v.r-v.q)*v.T)}
+  ],
+  5:[{name:'Interest-Rate Futures Quick Calc',equation:'Delta P ≈ -P * D * Delta y',description:'Optional approximation for price sensitivity to yield shifts.',ranges:[['P',900,1200,2],['D',2,12,2],['Delta_y',0.001,0.01,4]],compute:v=>-v.P*v.D*v.Delta_y}],
+  6:[
+    {name:'Formula: Swap Net Cash Flow (Fixed-for-Floating)',equation:'CF = (R_floating - R_fixed) * L * (n/360)',description:'Periodic net payment in interest-rate swaps; usually netted.',ranges:[['R_floating',0.02,0.07,3],['R_fixed',0.03,0.05,3],['L',1000000,100000000,0],['n',90,182,0]],compute:v=>(v.R_floating-v.R_fixed)*v.L*(v.n/360)}
+  ],
+  7:[{name:'Securitization Loss Waterfall',equation:'Mezz Loss = max(Total Loss - Equity, 0)',description:'Optional tranche waterfall check.',ranges:[['Total_Loss',1000000,50000000,0],['Equity',500000,20000000,0]],compute:v=>Math.max(v.Total_Loss-v.Equity,0)}],
+  8:[{name:'LIBOR-OIS Spread',equation:'Spread (bps) = (LIBOR - OIS) * 10000',description:'Optional stress indicator used in credit/liquidity analysis.',ranges:[['LIBOR',0.02,0.08,4],['OIS',0.01,0.07,4]],compute:v=>(v.LIBOR-v.OIS)*10000}],
+  9:[
+    {name:'Formula: Long Call Profit',equation:'Profit = max(ST - K, 0) - c',description:'Net payoff for long call after premium.',ranges:[['ST',30,150,2],['K',40,120,2],['c',1,10,2]],compute:v=>Math.max(v.ST-v.K,0)-v.c}
+  ],
+  10:[
+    {name:'Formula 1: Put-Call Parity (solve p)',equation:'p = c + K*e^(-r*T) - S0',description:'Fundamental no-arbitrage relationship for European options.',ranges:[['c',2,15,2],['K',50,100,2],['r',0.02,0.05,3],['T',0.5,1,2],['S0',45,105,2]],compute:v=>v.c+v.K*Math.exp(-v.r*v.T)-v.S0},
+    {name:'Formula 2: Lower Bound for a European Call',equation:'LowerBound = max(S0 - K*e^(-r*T), 0)',description:'Absolute minimum fair call value in no-arbitrage markets.',ranges:[['S0',60,120,2],['K',55,110,2],['r',0.01,0.04,3],['T',0.25,1,2]],compute:v=>Math.max(v.S0-v.K*Math.exp(-v.r*v.T),0)}
+  ],
+  11:[
+    {name:'Formula: Bull Call Spread Max Profit',equation:'Max_Profit = (K2 - K1) - (c1 - c2)',description:'Maximum gain from buying lower-strike call and selling higher-strike call.',ranges:[['K1',40,60,2],['K2',50,80,2],['c1',3,8,2],['c2',1,4,2]],compute:v=>(v.K2-v.K1)-(v.c1-v.c2)}
+  ]
+};
+
+function randIn(min,max,dec=0){
+  const n = min + Math.random()*(max-min);
+  const p = Math.pow(10,dec);
+  return Math.round(n*p)/p;
+}
+
+function evaluateExcelLike(input){
+  const raw = String(input||'').trim();
+  if(!raw) return NaN;
+  const expr = raw.startsWith('=') ? raw.slice(1) : raw;
+  if(!/^[0-9+\-*/().\s]+$/.test(expr)) return NaN;
+  try{return Function('"use strict";return ('+expr+')')();}catch{return NaN;}
+}
+
+function numFmt(v){
+  if(Math.abs(v)>=1000) return Number(v).toLocaleString('en-US',{maximumFractionDigits:4});
+  return Number(v).toFixed(4).replace(/\.0+$/,'').replace(/(\.\d*?)0+$/,'$1');
+}
+
+const state = JSON.parse(localStorage.getItem('derivatives-state')||'{"current":0,"completed":[]}');
+if(!Array.isArray(state.completed)) state.completed=[];
+let selectedLevel = Math.min(state.current, course.length-1);
+let currentTab='theory';
+let levelsCollapsed = false;
+let focusMode = false;
+let adminOverride = false;
+const progressEl = document.getElementById('progress');
+
+function save(){localStorage.setItem('derivatives-state',JSON.stringify(state));}
+function isUnlocked(i){return adminOverride || i===0 || state.completed.includes(i-1);} 
+function normalize(s){return String(s||'').toLowerCase().trim().replace(/[$,%]/g,'').replace(/,/g,'');}
+function calcMatch(ans,input){
+  const na=normalize(ans), ni=normalize(input);
+  if(na===ni) return true;
+  const anum=parseFloat(na), inum=parseFloat(ni);
+  if(!isNaN(anum)&&!isNaN(inum)) return Math.abs(anum-inum)<=0.02*Math.max(1,Math.abs(anum));
+  return ni.includes(na) || na.includes(ni);
+}
+function applyFocusMode(){
+  document.body.classList.toggle('focus-mode', focusMode);
+  const b=document.getElementById('focusToggle');
+  if(b) b.textContent = `Focus Mode: ${focusMode?'On':'Off'}`;
+}
+
+function showUnlockPasswordPrompt(){
+  const host=document.getElementById('popupHost');
+  host.innerHTML=`<div class="popup-overlay"><div class="popup-card">
+    <h3 class="popup-title">⭐ Instructor Unlock</h3>
+    <div>Enter password to temporarily remove level restrictions (until refresh).</div>
+    <div style="margin-top:10px"><input id="unlockInput" type="password" placeholder="Password"/></div>
+    <div class="feedback" id="unlockFb"></div>
+    <div class="popup-actions">
+      <button class="btn" id="unlockSubmit">Unlock</button>
+      <button class="btn" id="unlockCancel">Cancel</button>
+    </div>
+  </div></div>`;
+
+  const close=()=>{host.innerHTML='';};
+  const submit=()=>{
+    const val=document.getElementById('unlockInput').value.trim();
+    const fb=document.getElementById('unlockFb');
+    if(val==='2002'){
+      adminOverride=true;
+      renderLevels();
+      fb.className='feedback good';
+      fb.textContent='✅ Unlocked for this session (until page refresh).';
+      setTimeout(close,700);
+    } else {
+      fb.className='feedback bad';
+      fb.textContent='❌ Wrong password.';
+    }
+  };
+
+  document.getElementById('unlockSubmit').onclick=submit;
+  document.getElementById('unlockCancel').onclick=close;
+  const input=document.getElementById('unlockInput');
+  input.focus();
+  input.addEventListener('keydown',(e)=>{if(e.key==='Enter') submit();});
+}
+
+function renderLevels(){
+  const box=document.getElementById('levels'); box.innerHTML='';
+  box.style.display = levelsCollapsed ? 'none' : 'grid';
+  const toggleBtn = document.getElementById('toggleLevels');
+  toggleBtn.textContent = levelsCollapsed ? 'Expand' : 'Collapse';
+  toggleBtn.setAttribute('aria-expanded', String(!levelsCollapsed));
+  course.forEach((c,i)=>{
+    const d=document.createElement('div');
+    d.className='level '+(state.completed.includes(i)?'completed ':i===state.current?'current ':'')+(!isUnlocked(i)?'locked':'');
+    d.innerHTML=`<div class="name">Level ${i+1} — ${c.title}</div><div class="status">${state.completed.includes(i)?'Completed':i===state.current?'Current':'Locked'}</div>`;
+    d.onclick=()=>{if(isUnlocked(i)){selectedLevel=i;renderContent();renderLevels();}};
+    box.appendChild(d);
+  });
+  progressEl.textContent = `Completed levels: ${state.completed.length}/${course.length}`;
+}
+function renderContent(){
+  const lvl=course[selectedLevel];
+  document.getElementById('levelTitle').textContent=`Level ${selectedLevel+1} — ${lvl.title}`;
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===currentTab));
+  const th=document.getElementById('theoryPane');
+  const calc=document.getElementById('calculationPane');
+  const pr=document.getElementById('practicePane');
+  th.style.display=currentTab==='theory'?'block':'none';
+  calc.style.display=currentTab==='calculation'?'block':'none';
+  pr.style.display=currentTab==='practice'?'block':'none';
+  const sectionsHtml = (lvl.theorySections&&lvl.theorySections.length)
+    ? `<div class="theory-sections">${lvl.theorySections.map((sec,idx)=>`<div class="theory-sec"><button class="theory-toggle" data-sec="${idx}">${sec.id} ${sec.title} ${idx===0?'(open)':''}</button><div class="theory-panel ${idx===0?'open':''}" data-panel="${idx}"><p>${sec.text}</p>${sec.detail?`<p>${sec.detail}</p>`:''}${sec.example?`<div class="theory-ex">🧠 Example: ${sec.example}</div>`:''}${sec.calc?`<div class="theory-calc">${sec.calc}</div>`:''}${sec.figure?`<div class="theory-fig">${sec.figure}</div>`:''}</div></div>`).join('')}</div>`
+    : '';
+  th.innerHTML=`<p>Introduction to the course and its core concepts. In this section, you will learn the fundamental ideas that serve as the foundation for the rest of the course.</p>
+  <ul class="theory-summary">${lvl.summary.map(s=>`<li>${s}</li>`).join('')}</ul>
+  ${sectionsHtml}
+  <h4>Chapter starting page: ${chapterPages[selectedLevel]}</h4>
+  <div class="pdf-tools"><a class="btn" href="options.pdf#page=${chapterPages[selectedLevel]}" target="_blank">Open Lecture Material (PDF)</a>
+  <a class="btn" href="options.pdf" download>Download PDF</a></div>
+  <iframe src="options.pdf#page=${chapterPages[selectedLevel]}"></iframe>`;
+
+  th.querySelectorAll('.theory-toggle').forEach(btn=>{
+    btn.onclick=()=>{
+      const idx=btn.getAttribute('data-sec');
+      const panel=th.querySelector(`[data-panel="${idx}"]`);
+      if(panel) panel.classList.toggle('open');
+    };
+  });
+
+  renderMostImportantCalculation();
+  renderPractice();
+}
+
+let qIndex=0; let results={};
+
+function nextQuestion(){
+  const lvl=course[selectedLevel];
+  if(qIndex<lvl.quiz.length-1) qIndex++;
+  renderPractice();
+}
+
+function showResultPopup({ok,hint,onConfirm}){
+  const host=document.getElementById('popupHost');
+  const secsStart=ok?5:10;
+  let secs=secsStart;
+  host.innerHTML=`<div class="popup-overlay"><div class="popup-card">
+    <h3 class="popup-title">${ok?'✅ Correct answer!':'❌ Wrong answer'}</h3>
+    <div>${ok?'Want to continue?':'Want to try again?'}</div>
+    ${ok?'':`<div class="popup-hint">💡 Hint: ${hint||'No hint available.'}</div>`}
+    <div class="timer">Auto ${ok?'continue':'close'} in <strong id="popupTimer">${secs}</strong>s</div>
+    <div class="popup-actions">
+      <button class="btn" id="popupConfirm">${ok?'Yes, continue':'Try again now'}</button>
+      <button class="btn" id="popupClose">Close</button>
+    </div>
+  </div></div>`;
+
+  const timerEl=document.getElementById('popupTimer');
+  const close=()=>{clearInterval(intv); host.innerHTML='';};
+  const intv=setInterval(()=>{
+    secs-=1;
+    if(timerEl) timerEl.textContent=String(Math.max(0,secs));
+    if(secs<=0){
+      clearInterval(intv);
+      if(ok && onConfirm) onConfirm();
+      close();
+    }
+  },1000);
+
+  document.getElementById('popupConfirm').onclick=()=>{ if(ok && onConfirm) onConfirm(); close(); };
+  document.getElementById('popupClose').onclick=close;
+}
+
+function makeVizHtml(f, vals){
+  const eq = (f.equation||'').toLowerCase();
+
+  // 1) Call payoff mini chart
+  if(eq.includes('max(st - k, 0) - c')){
+    const K=vals.K, c=vals.c;
+    const xmin=Math.max(1, K*0.5), xmax=K*1.8;
+    const n=24;
+    const pts=[];
+    let ymin=Infinity, ymax=-Infinity;
+    for(let i=0;i<n;i++){
+      const x=xmin + (xmax-xmin)*i/(n-1);
+      const y=Math.max(x-K,0)-c;
+      ymin=Math.min(ymin,y); ymax=Math.max(ymax,y);
+      pts.push({x,y});
+    }
+    if(ymax===ymin){ymax=ymin+1;}
+    const mapX=x=>20 + ((x-xmin)/(xmax-xmin))*320;
+    const mapY=y=>110 - ((y-ymin)/(ymax-ymin))*90;
+    const poly=pts.map(p=>`${mapX(p.x)},${mapY(p.y)}`).join(' ');
+    const zeroY = mapY(0);
+    const strikeX = mapX(K);
+    return `<div class="viz"><div class="viz-title">📈 Long Call Payoff (profit vs expiry stock price)</div>
+      <svg viewBox="0 0 360 130" preserveAspectRatio="none">
+        <line x1="20" y1="110" x2="340" y2="110" stroke="#5060b2"/>
+        <line x1="20" y1="20" x2="20" y2="110" stroke="#5060b2"/>
+        <line x1="20" y1="${zeroY}" x2="340" y2="${zeroY}" stroke="#7f8bd6" stroke-dasharray="3 3"/>
+        <line x1="${strikeX}" y1="20" x2="${strikeX}" y2="110" stroke="#7f8bd6" stroke-dasharray="3 3"/>
+        <polyline fill="none" stroke="#7c83ff" stroke-width="2.5" points="${poly}"/>
+      </svg>
+      <div class="viz-note">Break-even ≈ K + c = ${numFmt(K+c)} | Strike K = ${numFmt(K)}</div></div>`;
+  }
+
+  // 2) Basis mini trend chart
+  if(eq.includes('b = s - f') || (vals.S!==undefined && vals.F!==undefined)){
+    const base=(vals.S??0)-(vals.F??0);
+    const steps=[base];
+    for(let i=1;i<6;i++){
+      steps.push(steps[i-1] + (Math.random()*8-4));
+    }
+    const ymin=Math.min(...steps)-2, ymax=Math.max(...steps)+2;
+    const mapX=i=>25 + (i/5)*315;
+    const mapY=v=>108 - ((v-ymin)/(ymax-ymin||1))*86;
+    const poly=steps.map((v,i)=>`${mapX(i)},${mapY(v)}`).join(' ');
+    return `<div class="viz"><div class="viz-title">📉 Basis Mini Chart (simulated movement)</div>
+      <svg viewBox="0 0 360 130" preserveAspectRatio="none">
+        <line x1="25" y1="108" x2="340" y2="108" stroke="#5060b2"/>
+        <line x1="25" y1="22" x2="25" y2="108" stroke="#5060b2"/>
+        <polyline fill="none" stroke="#4ade80" stroke-width="2.5" points="${poly}"/>
+      </svg>
+      <div class="viz-note">Current basis B = S - F = ${numFmt(base)} (S=${numFmt(vals.S)}, F=${numFmt(vals.F)})</div></div>`;
+  }
+
+  return '';
+}
+
+function renderMostImportantCalculation(){
+  const pane=document.getElementById('calculationPane');
+  const formulas = optionalCalculations[selectedLevel] || [];
+  if(!formulas.length){
+    pane.innerHTML=`<div class="qcard"><div class="qmeta"><span>Most Important Calculation (Optional)</span></div><p>No dedicated formula task for this chapter yet. You can continue directly to Practice Exercises.</p></div>`;
+    return;
+  }
+
+  const generated = formulas.map((f,idx)=>{
+    const vals={};
+    f.ranges.forEach(([k,min,max,dec])=>vals[k]=randIn(min,max,dec));
+    const expected=f.compute(vals);
+    const varsHtml=f.ranges.map(([k])=>`<span class="vchip">${k} = ${numFmt(vals[k])}</span>`).join(' ');
+    const vizHtml=makeVizHtml(f, vals);
+    return `
+      <div class="formula-card" data-fidx="${idx}">
+        <div class="qmeta"><span>${f.name}</span><span>Optional</span></div>
+        <div class="formula-eq">${f.equation}</div>
+        <p>${f.description}</p>
+        <p><strong>Task:</strong> Calculate using the random values below (new values appear each time this tab is opened).</p>
+        <div class="var-grid">${varsHtml}</div>
+        ${vizHtml}
+        <div class="calc-input-row">
+          <input type="text" data-input="${idx}" placeholder="Type like Excel: =100-200" />
+          <button class="btn" data-check="${idx}">Check</button>
+        </div>
+        <div class="feedback" data-fb="${idx}"></div>
+        <input type="hidden" data-expected="${idx}" value="${expected}">
+      </div>`;
+  }).join('');
+
+  pane.innerHTML=`<div class="qcard"><div class="qmeta"><span>Most Important Calculation (Optional)</span><span>You can continue without solving these.</span></div><p>These are optional quick drills with chapter formulas.</p>${generated}</div>`;
+
+  pane.querySelectorAll('[data-check]').forEach(btn=>{
+    btn.onclick=()=>{
+      const idx=btn.getAttribute('data-check');
+      const inputEl=pane.querySelector(`[data-input="${idx}"]`);
+      const fb=pane.querySelector(`[data-fb="${idx}"]`);
+      const expected=parseFloat(pane.querySelector(`[data-expected="${idx}"]`).value);
+      const user=evaluateExcelLike(inputEl.value);
+      if(Number.isNaN(user)){
+        fb.textContent='❌ Invalid format. Example: =100-200 or 42.5';
+        fb.className='feedback bad';
+        return;
+      }
+      if(Math.abs(user-expected)<=1){
+        fb.textContent=`✅ Correct (accepted within ±1). Computed result: ${numFmt(expected)}`;
+        fb.className='feedback good';
+      }else{
+        fb.textContent=`❌ Not correct yet. Your result: ${numFmt(user)} | Expected: ${numFmt(expected)} (±1 accepted).`;
+        fb.className='feedback bad';
+      }
+    }
+  });
+}
+function renderPractice(){
+  const lvl=course[selectedLevel];
+  if(!results[selectedLevel]) results[selectedLevel]=Array(lvl.quiz.length).fill(false);
+  const q=lvl.quiz[qIndex];
+  const alreadySolved = !!results[selectedLevel][qIndex];
+  const done=results[selectedLevel].filter(Boolean).length;
+  const pane=document.getElementById('practicePane');
+  pane.innerHTML=`<div class="qcard">
+    <div class="qmeta"><span>Question ${qIndex+1}/${lvl.quiz.length}</span><span>Solved: ${done}/${lvl.quiz.length}</span></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin:6px 0 8px"><div>${q.q}</div><button class="btn" id="hintBtn" style="padding:6px 10px">💡 Hint</button></div>
+    <div id="hint" class="hint">${q.hint}</div>
+    <div id="answerArea"></div>
+    <div class="feedback" id="fb">${alreadySolved?'✅ Already solved.':''}</div>
+    <div class="nav"><button class="btn" id="prev" ${qIndex===0?'disabled':''}>← Previous</button><button class="btn" id="next" ${qIndex===lvl.quiz.length-1?'disabled':''}>Next →</button></div>
+  </div>`;
+
+  const evaluateAnswer = (value)=>{
+    if(results[selectedLevel][qIndex]) return;
+    const ok = normalize(value)===normalize(q.a);
+    const fb=document.getElementById('fb');
+    if(ok){
+      fb.textContent='✅ Correct!';
+      fb.className='feedback good';
+      results[selectedLevel][qIndex]=true;
+      tryCompleteLevel();
+      showResultPopup({ok:true,onConfirm:nextQuestion});
+    } else {
+      fb.textContent='❌ Not correct yet.';
+      fb.className='feedback bad';
+      document.getElementById('hint').classList.add('show');
+      showResultPopup({ok:false,hint:q.hint});
+    }
+  };
+
+  const a=document.getElementById('answerArea');
+  if(q.type==='mcq'){
+    a.innerHTML=q.options.map((o,i)=>`<label class="opt" data-choice="${o.replace(/"/g,'&quot;')}">${String.fromCharCode(65+i)}) ${o}<span class="keycap">${i+1}</span></label>`).join('');
+    let selectedChoice = null;
+    const optionsEls = [...a.querySelectorAll('.opt')];
+    optionsEls.forEach(el=>el.onclick=()=>{
+      if(results[selectedLevel][qIndex]) return;
+      selectedChoice=el.getAttribute('data-choice');
+      optionsEls.forEach(x=>x.classList.remove('selected'));
+      el.classList.add('selected');
+      evaluateAnswer(selectedChoice);
+    });
+    if(alreadySolved){
+      optionsEls.forEach(el=>{
+        el.style.opacity='0.75';
+        el.style.cursor='default';
+      });
+    }
+    window.onkeydown=(e)=>{
+      const k=e.key.toLowerCase();
+      if(k==='arrowleft' || k==='a'){ goPrev(); return; }
+      if(k==='arrowright' || k==='d'){ goNext(); return; }
+      if(results[selectedLevel][qIndex]) return;
+      const n=Number(e.key);
+      if(n>=1 && n<=q.options.length){
+        selectedChoice=q.options[n-1];
+        optionsEls.forEach(x=>x.classList.remove('selected'));
+        if(optionsEls[n-1]) optionsEls[n-1].classList.add('selected');
+        evaluateAnswer(selectedChoice);
+      }
+      if(e.key==='Enter' && selectedChoice){
+        evaluateAnswer(selectedChoice);
+      }
+    };
+  } else {
+    a.innerHTML=`<input id="calcInput" type="text" placeholder="Type like Excel: =100-200, then press Enter" ${alreadySolved?'readonly':''}/>`;
+    const input=document.getElementById('calcInput');
+    const submit=()=>{
+      if(results[selectedLevel][qIndex]) return;
+      const parsed=evaluateExcelLike(input.value);
+      const candidate = Number.isNaN(parsed) ? input.value : String(parsed);
+      const ok=calcMatch(q.a,candidate);
+      const fb=document.getElementById('fb');
+      if(ok){
+        fb.textContent='✅ Correct!';
+        fb.className='feedback good';
+        results[selectedLevel][qIndex]=true;
+        tryCompleteLevel();
+        showResultPopup({ok:true,onConfirm:nextQuestion});
+      }else{
+        fb.textContent='❌ Not correct yet.';
+        fb.className='feedback bad';
+        document.getElementById('hint').classList.add('show');
+        showResultPopup({ok:false,hint:q.hint});
+      }
+    };
+    input.addEventListener('keydown',(e)=>{if(e.key==='Enter') submit();});
+    window.onkeydown=(e)=>{
+      const k=e.key.toLowerCase();
+      if(k==='arrowleft' || k==='a'){ goPrev(); return; }
+      if(k==='arrowright' || k==='d'){ goNext(); return; }
+      if(e.key==='Enter') submit();
+    };
+  }
+
+  document.getElementById('hintBtn').onclick=()=>document.getElementById('hint').classList.toggle('show');
+  const goPrev=()=>{qIndex=Math.max(0,qIndex-1);renderPractice();};
+  const goNext=()=>{qIndex=Math.min(lvl.quiz.length-1,qIndex+1);renderPractice();};
+  document.getElementById('prev').onclick=goPrev;
+  document.getElementById('next').onclick=goNext;
+}
+function tryCompleteLevel(){
+  const all=results[selectedLevel].every(Boolean);
+  if(all && !state.completed.includes(selectedLevel)){
+    state.completed.push(selectedLevel);
+    if(state.current===selectedLevel && selectedLevel<course.length-1){state.current++; pop(`🎉 Level ${selectedLevel+1} completed! Level ${selectedLevel+2} unlocked.`);} else {pop(`🎉 Level ${selectedLevel+1} completed!`);}
+    save(); renderLevels();
+  }
+}
+function pop(msg){const d=document.createElement('div');d.className='unlock-pop';d.textContent=msg;document.body.appendChild(d);setTimeout(()=>d.remove(),1400)}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{currentTab=b.dataset.tab;renderContent();});
+document.getElementById('toggleLevels').onclick=()=>{levelsCollapsed=!levelsCollapsed;renderLevels();};
+document.getElementById('focusToggle').onclick=()=>{focusMode=!focusMode;applyFocusMode();};
+document.getElementById('unlockStar').onclick=showUnlockPasswordPrompt;
+renderLevels();renderContent();applyFocusMode();
+</script>
+</body>
+</html>
