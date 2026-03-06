@@ -29,8 +29,11 @@
     iframe{width:100%;height:420px;border:1px solid #303870;border-radius:12px;background:#fff}
     .qcard{background:#1a1f3f;border:1px solid #39458c;border-radius:14px;padding:14px}
     .qmeta{color:var(--muted);font-size:12px;margin-bottom:6px;display:flex;justify-content:space-between}
-    .opt{display:block;margin:8px 0;padding:10px;border:1px solid #3f4b95;border-radius:10px;cursor:pointer}
-    .opt input{margin-right:8px}
+    .opt{display:block;margin:8px 0;padding:12px 44px 12px 12px;border:1px solid #3f4b95;border-radius:10px;cursor:pointer;position:relative}
+    .opt:hover{border-color:#5a68be}
+    .opt.selected{border-color:#8b9bff;background:rgba(124,131,255,.14)}
+    .opt input{display:none}
+    .keycap{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:12px;color:#9aa3d3;background:rgba(154,163,211,.12);border:1px solid rgba(154,163,211,.35);border-radius:6px;padding:1px 6px}
     .hint{color:#ffd166;background:#352a0f;border:1px solid #7f6625;padding:8px;border-radius:8px;margin-top:8px;display:none}
     .hint.show{display:block}
     .feedback{margin-top:8px;font-weight:700}.good{color:var(--ok)}.bad{color:#f87171}
@@ -43,6 +46,17 @@
     .vchip{background:#212a57;border:1px solid #4150a7;border-radius:999px;padding:4px 10px;font-size:12px;display:inline-block}
     .calc-input-row{display:flex;gap:8px;align-items:center;margin-top:10px}
     .calc-input-row input{flex:1}
+    .popup-overlay{position:fixed;inset:0;background:rgba(3,6,22,.7);display:flex;align-items:center;justify-content:center;z-index:50}
+    .popup-card{width:min(520px,92vw);background:#171d3f;border:1px solid #4150a7;border-radius:14px;padding:16px;box-shadow:0 10px 35px rgba(0,0,0,.35)}
+    .popup-title{font-size:20px;font-weight:800;margin:0 0 8px}
+    .popup-hint{background:#352a0f;border:1px solid #7f6625;color:#ffd166;padding:10px;border-radius:10px;margin:10px 0}
+    .popup-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
+    .timer{color:var(--muted);font-size:13px}
+    .star-btn{padding:6px 10px;font-size:16px;line-height:1}
+    .focus-mode .wrap>h1,.focus-mode .wrap>.subtitle,.focus-mode #sidebarCard{display:none}
+    .focus-mode .layout{display:flex;justify-content:center;margin-top:0}
+    .focus-mode #contentCard{width:min(980px,96vw)}
+    .focus-mode .wrap{max-width:1100px}
     @media (max-width:980px){.layout{grid-template-columns:1fr}.levels{grid-template-columns:repeat(3,1fr)}}
   </style>
 </head>
@@ -51,7 +65,7 @@
   <h1>Course Path</h1>
   <p class="subtitle">This learning path is based on the structure of the Pricing and Forecasting course at BME and the textbook Options, Futures, and Other Derivatives. Learn step by step through structured levels. Each level begins with theory and is followed by practice exercises. The next level unlocks once you successfully complete the current one.</p>
   <div class="layout">
-    <div class="card">
+    <div class="card" id="sidebarCard">
       <h3>Progress</h3>
       <div id="progress" class="progress"></div>
       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
@@ -60,8 +74,14 @@
       </div>
       <div id="levels" class="levels" style="margin-top:10px"></div>
     </div>
-    <div class="card">
-      <h2 id="levelTitle"></h2>
+    <div class="card" id="contentCard">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+        <h2 id="levelTitle" style="margin:0"></h2>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn star-btn" id="unlockStar" title="Unlock levels">⭐</button>
+          <button class="btn" id="focusToggle" style="padding:6px 10px">Focus Mode: Off</button>
+        </div>
+      </div>
       <div class="tabs">
         <button class="tab active" data-tab="theory">1) Theory</button>
         <button class="tab" data-tab="calculation">2) Most Important Calculation</button>
@@ -73,6 +93,7 @@
     </div>
   </div>
 </div>
+<div id="popupHost"></div>
 <script>
 const chapterPages = [23,46,71,99,126,154,174,207,222,235,256,276];
 const course = [
@@ -278,10 +299,12 @@ if(!Array.isArray(state.completed)) state.completed=[];
 let selectedLevel = Math.min(state.current, course.length-1);
 let currentTab='theory';
 let levelsCollapsed = false;
+let focusMode = false;
+let adminOverride = false;
 const progressEl = document.getElementById('progress');
 
 function save(){localStorage.setItem('derivatives-state',JSON.stringify(state));}
-function isUnlocked(i){return i===0 || state.completed.includes(i-1);} 
+function isUnlocked(i){return adminOverride || i===0 || state.completed.includes(i-1);} 
 function normalize(s){return String(s||'').toLowerCase().trim().replace(/[$,%]/g,'').replace(/,/g,'');}
 function calcMatch(ans,input){
   const na=normalize(ans), ni=normalize(input);
@@ -290,6 +313,48 @@ function calcMatch(ans,input){
   if(!isNaN(anum)&&!isNaN(inum)) return Math.abs(anum-inum)<=0.02*Math.max(1,Math.abs(anum));
   return ni.includes(na) || na.includes(ni);
 }
+function applyFocusMode(){
+  document.body.classList.toggle('focus-mode', focusMode);
+  const b=document.getElementById('focusToggle');
+  if(b) b.textContent = `Focus Mode: ${focusMode?'On':'Off'}`;
+}
+
+function showUnlockPasswordPrompt(){
+  const host=document.getElementById('popupHost');
+  host.innerHTML=`<div class="popup-overlay"><div class="popup-card">
+    <h3 class="popup-title">⭐ Instructor Unlock</h3>
+    <div>Enter password to temporarily remove level restrictions (until refresh).</div>
+    <div style="margin-top:10px"><input id="unlockInput" type="password" placeholder="Password"/></div>
+    <div class="feedback" id="unlockFb"></div>
+    <div class="popup-actions">
+      <button class="btn" id="unlockSubmit">Unlock</button>
+      <button class="btn" id="unlockCancel">Cancel</button>
+    </div>
+  </div></div>`;
+
+  const close=()=>{host.innerHTML='';};
+  const submit=()=>{
+    const val=document.getElementById('unlockInput').value.trim();
+    const fb=document.getElementById('unlockFb');
+    if(val==='2002'){
+      adminOverride=true;
+      renderLevels();
+      fb.className='feedback good';
+      fb.textContent='✅ Unlocked for this session (until page refresh).';
+      setTimeout(close,700);
+    } else {
+      fb.className='feedback bad';
+      fb.textContent='❌ Wrong password.';
+    }
+  };
+
+  document.getElementById('unlockSubmit').onclick=submit;
+  document.getElementById('unlockCancel').onclick=close;
+  const input=document.getElementById('unlockInput');
+  input.focus();
+  input.addEventListener('keydown',(e)=>{if(e.key==='Enter') submit();});
+}
+
 function renderLevels(){
   const box=document.getElementById('levels'); box.innerHTML='';
   box.style.display = levelsCollapsed ? 'none' : 'grid';
@@ -326,6 +391,44 @@ function renderContent(){
 }
 
 let qIndex=0; let results={};
+
+function nextQuestion(){
+  const lvl=course[selectedLevel];
+  if(qIndex<lvl.quiz.length-1) qIndex++;
+  renderPractice();
+}
+
+function showResultPopup({ok,hint,onConfirm}){
+  const host=document.getElementById('popupHost');
+  const secsStart=ok?5:10;
+  let secs=secsStart;
+  host.innerHTML=`<div class="popup-overlay"><div class="popup-card">
+    <h3 class="popup-title">${ok?'✅ Correct answer!':'❌ Wrong answer'}</h3>
+    <div>${ok?'Want to continue?':'Want to try again?'}</div>
+    ${ok?'':`<div class="popup-hint">💡 Hint: ${hint||'No hint available.'}</div>`}
+    <div class="timer">Auto ${ok?'continue':'close'} in <strong id="popupTimer">${secs}</strong>s</div>
+    <div class="popup-actions">
+      <button class="btn" id="popupConfirm">${ok?'Yes, continue':'Try again now'}</button>
+      <button class="btn" id="popupClose">Close</button>
+    </div>
+  </div></div>`;
+
+  const timerEl=document.getElementById('popupTimer');
+  const close=()=>{clearInterval(intv); host.innerHTML='';};
+  const intv=setInterval(()=>{
+    secs-=1;
+    if(timerEl) timerEl.textContent=String(Math.max(0,secs));
+    if(secs<=0){
+      clearInterval(intv);
+      if(ok && onConfirm) onConfirm();
+      close();
+    }
+  },1000);
+
+  document.getElementById('popupConfirm').onclick=()=>{ if(ok && onConfirm) onConfirm(); close(); };
+  document.getElementById('popupClose').onclick=close;
+}
+
 function renderMostImportantCalculation(){
   const pane=document.getElementById('calculationPane');
   const formulas = optionalCalculations[selectedLevel] || [];
@@ -383,39 +486,93 @@ function renderPractice(){
   const lvl=course[selectedLevel];
   if(!results[selectedLevel]) results[selectedLevel]=Array(lvl.quiz.length).fill(false);
   const q=lvl.quiz[qIndex];
+  const alreadySolved = !!results[selectedLevel][qIndex];
   const done=results[selectedLevel].filter(Boolean).length;
   const pane=document.getElementById('practicePane');
-  const navDisabled = !results[selectedLevel][qIndex];
   pane.innerHTML=`<div class="qcard">
     <div class="qmeta"><span>Question ${qIndex+1}/${lvl.quiz.length}</span><span>Solved: ${done}/${lvl.quiz.length}</span></div>
-    <div>${q.q}</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin:6px 0 8px"><div>${q.q}</div><button class="btn" id="hintBtn" style="padding:6px 10px">💡 Hint</button></div>
+    <div id="hint" class="hint">${q.hint}</div>
     <div id="answerArea"></div>
-    <button class="btn" id="hintBtn">💡 Hint</button>
-    <div class="hint" id="hint">${q.hint}</div>
-    <div class="feedback" id="fb"></div>
+    <div class="feedback" id="fb">${alreadySolved?'✅ Already solved.':''}</div>
     <div class="nav"><button class="btn" id="prev" ${qIndex===0?'disabled':''}>← Previous</button><button class="btn" id="next" ${qIndex===lvl.quiz.length-1?'disabled':''}>Next →</button></div>
   </div>`;
+
+  const evaluateAnswer = (value)=>{
+    if(results[selectedLevel][qIndex]) return;
+    const ok = normalize(value)===normalize(q.a);
+    const fb=document.getElementById('fb');
+    if(ok){
+      fb.textContent='✅ Correct!';
+      fb.className='feedback good';
+      results[selectedLevel][qIndex]=true;
+      tryCompleteLevel();
+      showResultPopup({ok:true,onConfirm:nextQuestion});
+    } else {
+      fb.textContent='❌ Not correct yet.';
+      fb.className='feedback bad';
+      document.getElementById('hint').classList.add('show');
+      showResultPopup({ok:false,hint:q.hint});
+    }
+  };
+
   const a=document.getElementById('answerArea');
   if(q.type==='mcq'){
-    a.innerHTML=q.options.map((o,i)=>`<label class="opt"><input type="radio" name="opt" value="${o.replace(/"/g,'&quot;')}">${String.fromCharCode(65+i)}) ${o}</label>`).join('')+`<button class="btn" id="check">Check</button> <button class="btn" id="retry">Retry</button>`;
-  } else {
-    a.innerHTML=`<input id="calcInput" type="text" placeholder="Type your answer here"/><div style="margin-top:8px"><button class="btn" id="check">Check</button> <button class="btn" id="retry">Retry</button></div>`;
-  }
-  document.getElementById('hintBtn').onclick=()=>document.getElementById('hint').classList.toggle('show');
-  document.getElementById('retry').onclick=()=>{document.getElementById('fb').textContent=''; if(q.type==='calc') document.getElementById('calcInput').value='';};
-  document.getElementById('check').onclick=()=>{
-    let ok=false;
-    if(q.type==='mcq'){
-      const sel=document.querySelector('input[name="opt"]:checked');
-      ok=!!sel && normalize(sel.value)===normalize(q.a);
-    } else {
-      ok=calcMatch(q.a,document.getElementById('calcInput').value);
+    a.innerHTML=q.options.map((o,i)=>`<label class="opt" data-choice="${o.replace(/"/g,'&quot;')}">${String.fromCharCode(65+i)}) ${o}<span class="keycap">${i+1}</span></label>`).join('');
+    let selectedChoice = null;
+    const optionsEls = [...a.querySelectorAll('.opt')];
+    optionsEls.forEach(el=>el.onclick=()=>{
+      if(results[selectedLevel][qIndex]) return;
+      selectedChoice=el.getAttribute('data-choice');
+      optionsEls.forEach(x=>x.classList.remove('selected'));
+      el.classList.add('selected');
+      evaluateAnswer(selectedChoice);
+    });
+    if(alreadySolved){
+      optionsEls.forEach(el=>{
+        el.style.opacity='0.75';
+        el.style.cursor='default';
+      });
     }
-    const fb=document.getElementById('fb');
-    if(ok){fb.textContent='✅ Correct!';fb.className='feedback good';results[selectedLevel][qIndex]=true;tryCompleteLevel();}
-    else {fb.textContent='❌ Not correct yet. Retry.';fb.className='feedback bad';document.getElementById('hint').classList.add('show');}
-    renderPractice();
-  };
+    window.onkeydown=(e)=>{
+      if(results[selectedLevel][qIndex]) return;
+      const n=Number(e.key);
+      if(n>=1 && n<=q.options.length){
+        selectedChoice=q.options[n-1];
+        optionsEls.forEach(x=>x.classList.remove('selected'));
+        if(optionsEls[n-1]) optionsEls[n-1].classList.add('selected');
+      }
+      if(e.key==='Enter' && selectedChoice){
+        evaluateAnswer(selectedChoice);
+      }
+    };
+  } else {
+    a.innerHTML=`<input id="calcInput" type="text" placeholder="Type like Excel: =100-200, then press Enter" ${alreadySolved?'readonly':''}/>`;
+    const input=document.getElementById('calcInput');
+    const submit=()=>{
+      if(results[selectedLevel][qIndex]) return;
+      const parsed=evaluateExcelLike(input.value);
+      const candidate = Number.isNaN(parsed) ? input.value : String(parsed);
+      const ok=calcMatch(q.a,candidate);
+      const fb=document.getElementById('fb');
+      if(ok){
+        fb.textContent='✅ Correct!';
+        fb.className='feedback good';
+        results[selectedLevel][qIndex]=true;
+        tryCompleteLevel();
+        showResultPopup({ok:true,onConfirm:nextQuestion});
+      }else{
+        fb.textContent='❌ Not correct yet.';
+        fb.className='feedback bad';
+        document.getElementById('hint').classList.add('show');
+        showResultPopup({ok:false,hint:q.hint});
+      }
+    };
+    input.addEventListener('keydown',(e)=>{if(e.key==='Enter') submit();});
+    window.onkeydown=(e)=>{if(e.key==='Enter') submit();};
+  }
+
+  document.getElementById('hintBtn').onclick=()=>document.getElementById('hint').classList.toggle('show');
   document.getElementById('prev').onclick=()=>{qIndex=Math.max(0,qIndex-1);renderPractice();};
   document.getElementById('next').onclick=()=>{qIndex=Math.min(lvl.quiz.length-1,qIndex+1);renderPractice();};
 }
@@ -430,7 +587,9 @@ function tryCompleteLevel(){
 function pop(msg){const d=document.createElement('div');d.className='unlock-pop';d.textContent=msg;document.body.appendChild(d);setTimeout(()=>d.remove(),1400)}
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{currentTab=b.dataset.tab;renderContent();});
 document.getElementById('toggleLevels').onclick=()=>{levelsCollapsed=!levelsCollapsed;renderLevels();};
-renderLevels();renderContent();
+document.getElementById('focusToggle').onclick=()=>{focusMode=!focusMode;applyFocusMode();};
+document.getElementById('unlockStar').onclick=showUnlockPasswordPrompt;
+renderLevels();renderContent();applyFocusMode();
 </script>
 </body>
 </html>
