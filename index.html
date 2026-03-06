@@ -48,6 +48,7 @@
     .hint.show{display:block}
     .feedback{margin-top:8px;font-weight:700}.good{color:var(--ok)}.bad{color:#f87171}
     .nav{display:flex;gap:8px;margin-top:12px}
+    .practice-tools{display:flex;justify-content:flex-end;margin:6px 0 8px}
     input[type="text"]{width:100%;padding:10px;border-radius:8px;border:1px solid #4755ab;background:#101633;color:white}
     .progress{color:var(--muted);font-size:13px}
     .formula-card{background:#141a36;border:1px solid #3a478f;border-radius:12px;padding:12px;margin-top:10px}
@@ -317,6 +318,84 @@ function numFmt(v){
   return Number(v).toFixed(4).replace(/\.0+$/,'').replace(/(\.\d*?)0+$/,'$1');
 }
 
+const deepTheoryByLevel = {
+  0:[
+    {id:'1.1',title:'Exchange-traded markets',detail:'Standardized contracts, central clearing, strong transparency and liquidity.',example:'Gold futures with fixed lot size and listed expiries.',calc:'If 1 contract = 100 units and price rises by 2, long P&L = +200.',figure:'📘 Typical figure: clearinghouse flow and standardized contract table.'},
+    {id:'1.2',title:'OTC markets',detail:'Customized contracts between institutions; flexible but higher bilateral risk.',example:'Custom FX forward notional/date for a corporate payment.',calc:'Notional can be exactly matched to exposure, reducing mismatch risk.',figure:'📘 Typical figure: bilateral OTC network.'},
+    {id:'1.3',title:'Core instruments and trader roles',detail:'Forward/futures/options and the roles of hedgers, speculators, arbitrageurs.',example:'Hedger reduces risk, speculator seeks directional gain, arbitrageur enforces pricing links.',calc:'Long call profit = max(ST-K,0)-premium.',figure:'📘 Typical figure: payoff lines for forward/call/put.'}
+  ],
+  1:[
+    {id:'2.1',title:'Futures contract mechanics',detail:'Exchange defines asset, size, delivery terms, and listing cycles.',example:'One oil contract represents fixed barrels and listed months.',calc:'P&L per day = contract size × price change × number of contracts.',figure:'📘 Typical figure: futures contract specification table.'},
+    {id:'2.2',title:'Margins and marking-to-market',detail:'Initial/maintenance margins and daily settlement reduce credit buildup.',example:'Loss day lowers margin; below maintenance triggers margin call.',calc:'New margin = prior margin + daily P&L.',figure:'📘 Typical figure: margin account path over days.'},
+    {id:'2.3',title:'Convergence and delivery',detail:'Futures converges to spot near delivery due to arbitrage pressure.',example:'If futures too high near expiry, sell futures and buy spot.',calc:'Basis = Spot - Futures tends to 0 near expiry.',figure:'📘 Typical figure: spot/futures convergence chart.'}
+  ],
+  2:[
+    {id:'3.1',title:'Hedging logic',detail:'Short hedge for future sale risk; long hedge for future purchase risk.',example:'Producer sells futures to protect downside.',calc:'Hedge contracts ≈ exposure / contract size (adjusted by hedge ratio).',figure:'📘 Typical figure: hedged vs unhedged payoff.'},
+    {id:'3.2',title:'Basis risk and cross-hedge',detail:'Basis changes can hurt hedge precision; cross-hedge uses related asset futures.',example:'Jet fuel exposure hedged with heating oil futures.',calc:'h* = rho × (sigmaS / sigmaF).',figure:'📘 Typical figure: basis strengthening/weakening impact.'},
+    {id:'3.3',title:'Portfolio hedge with index futures',detail:'Use beta to scale hedge for systematic equity risk.',example:'High-beta portfolio needs more index futures.',calc:'N = beta × (VP / VF).',figure:'📘 Typical figure: beta-neutralization concept.'}
+  ],
+  3:[
+    {id:'4.1',title:'Interest-rate conventions',detail:'Compounding/day-count conventions strongly affect valuation.',example:'Continuous compounding often used in derivatives pricing.',calc:'A = P × e^(rT).',figure:'📘 Typical figure: annual vs continuous growth.'},
+    {id:'4.2',title:'Zero and forward rates',detail:'Zero curve discounts cash flows; forwards are implied future period rates.',example:'Use zero rates to infer 1y-2y forward rate.',calc:'Rf = (R2T2 - R1T1)/(T2-T1).',figure:'📘 Typical figure: yield curve + implied forwards.'},
+    {id:'4.3',title:'Bond sensitivity',detail:'Duration/convexity approximate price response to yield changes.',example:'Long duration bonds move more for same yield shift.',calc:'ΔP ≈ -P×D×Δy (plus convexity correction).',figure:'📘 Typical figure: price-yield curve.'}
+  ],
+  4:[
+    {id:'5.1',title:'Cost-of-carry pricing',detail:'Forward/futures price links spot, financing, income, and carry.',example:'No-income asset uses F0 = S0e^(rT).',calc:'With yield q: F0 = S0e^((r-q)T).',figure:'📘 Typical figure: cash-and-carry replication.'},
+    {id:'5.2',title:'Investment vs consumption assets',detail:'Consumption assets include convenience yield effects and storage frictions.',example:'Oil futures may sit below simple carry model due to convenience yield.',calc:'F0 = S0e^((c-y)T).',figure:'📘 Typical figure: convenience-yield intuition.'},
+    {id:'5.3',title:'Contract valuation over time',detail:'Forward value drifts from zero as market forward changes.',example:'Long forward gains when current forward > delivery price K.',calc:'f = (F-K)e^(-rT).',figure:'📘 Typical figure: forward value timeline.'}
+  ],
+  5:[
+    {id:'6.1',title:'Treasury futures basics',detail:'Quoted in points/32nds; conversion factors normalize deliverables.',example:'Short chooses cheapest-to-deliver bond.',calc:'Cash quote 102-12 = 102 + 12/32.',figure:'📘 Typical figure: CTD selection process.'},
+    {id:'6.2',title:'Eurodollar/short-rate futures',detail:'Quote is 100-R; price falls when rates rise.',example:'Short Eurodollar profits when quote declines.',calc:'1 bp move ≈ $25 per contract.',figure:'📘 Typical figure: quote-rate inversion.'},
+    {id:'6.3',title:'Duration hedge sizing',detail:'Match portfolio rate sensitivity with futures sensitivity.',example:'Use contract count to offset parallel shifts.',calc:'N = (P×DP)/(VF×DF).',figure:'📘 Typical figure: DV01 matching concept.'}
+  ],
+  6:[
+    {id:'7.1',title:'Interest-rate swaps',detail:'Exchange fixed vs floating on notional, usually net-settled.',example:'Convert floating-rate debt into fixed effective cost.',calc:'CF = (Rfloat-Rfixed)×L×(n/360).',figure:'📘 Typical figure: swap cash-flow legs.'},
+    {id:'7.2',title:'Comparative advantage idea',detail:'Firms borrow where they have advantage, then swap into desired profile.',example:'One firm fixed-advantaged, another floating-advantaged.',calc:'Net benefit shared via swap spread.',figure:'📘 Typical figure: pre/post-swap borrowing costs.'},
+    {id:'7.3',title:'Valuation and credit risk',detail:'Swap valued as fixed bond minus floating bond; positive MTM implies counterparty risk.',example:'If rates move in your favor, your exposure to default increases.',calc:'Swap PV = PV(receive leg)-PV(pay leg).',figure:'📘 Typical figure: MTM over time.'}
+  ],
+  7:[
+    {id:'8.1',title:'Securitization structure',detail:'Loans pooled into SPV, then tranched by risk priority.',example:'Senior tranche paid first, equity takes first losses.',calc:'Losses waterfall upward from equity to mezzanine to senior.',figure:'📘 Typical figure: tranche waterfall.'},
+    {id:'8.2',title:'CDOs and correlation risk',detail:'Re-securitization amplified dependence on correlated defaults.',example:'Housing downturn triggered simultaneous losses.',calc:'If equity exhausted, remaining loss hits mezzanine.',figure:'📘 Typical figure: correlated default effect.'},
+    {id:'8.3',title:'Crisis lessons',detail:'Incentives, leverage, opacity, and model risk can destabilize the system.',example:'Volume-driven origination weakened underwriting quality.',calc:'Higher leverage magnifies loss impact on equity.',figure:'📘 Typical figure: leverage-loss amplification.'}
+  ],
+  8:[
+    {id:'9.1',title:'Policy rates and overnight markets',detail:'Central banks steer short rates through policy and liquidity tools.',example:'Fed funds/repo operations influence funding conditions.',calc:'Lower discount rate increases PV of future inflows.',figure:'📘 Typical figure: policy transmission chain.'},
+    {id:'9.2',title:'LIBOR vs OIS',detail:'LIBOR contains bank credit premium; OIS is closer to risk-free benchmark.',example:'Post-crisis valuation moved to OIS discounting.',calc:'Spread (bps) = (LIBOR-OIS)×10000.',figure:'📘 Typical figure: spread spike during stress.'},
+    {id:'9.3',title:'RFR transition',detail:'Markets migrated from LIBOR to SOFR/SONIA/€STR frameworks.',example:'USD derivatives now primarily collateral-discounted on SOFR curves.',calc:'Term conversion requires robust day-count and compounding conventions.',figure:'📘 Typical figure: benchmark transition timeline.'}
+  ],
+  9:[
+    {id:'10.1',title:'Option contract basics',detail:'Calls/puts, strike, expiry, contract size, and exercise style define payoff.',example:'American options exercisable anytime; European only at expiry.',calc:'Intrinsic(call)=max(S-K,0), intrinsic(put)=max(K-S,0).',figure:'📘 Typical figure: ITM/ATM/OTM zones.'},
+    {id:'10.2',title:'Market mechanics and moneyness',detail:'Premium = intrinsic + time value; time value decays toward expiry.',example:'Deep ITM option has high intrinsic but still can carry time value.',calc:'Time value = premium - intrinsic.',figure:'📘 Typical figure: decomposition of premium.'},
+    {id:'10.3',title:'Position obligations',detail:'Buyer has right, seller has obligation if exercised.',example:'Short naked call has theoretically unlimited loss.',calc:'Long call profit = max(ST-K,0)-c.',figure:'📘 Typical figure: long/short option payoff pairs.'}
+  ],
+  10:[
+    {id:'11.1',title:'Option price drivers',detail:'S, K, T, sigma, r, dividends jointly shape option values.',example:'Higher volatility usually raises both call and put value.',calc:'Sensitivity intuition: vega positive for both calls/puts.',figure:'📘 Typical figure: price vs volatility slope.'},
+    {id:'11.2',title:'Put-call parity',detail:'No-arbitrage relationship ties call, put, spot, and discounted strike.',example:'Violation implies synthetic mispricing trade.',calc:'c + Ke^(-rT) = p + S0.',figure:'📘 Typical figure: synthetic equivalence diagram.'},
+    {id:'11.3',title:'Bounds and early exercise',detail:'Bounds prevent impossible prices; early exercise rules differ by option type/dividends.',example:'American call on non-dividend stock usually not exercised early.',calc:'Lower bound call ≥ max(S0-Ke^(-rT),0).',figure:'📘 Typical figure: feasible price region.'}
+  ],
+  11:[
+    {id:'12.1',title:'Single-option stock strategies',detail:'Covered call trades upside for premium; protective put buys downside insurance.',example:'Protective put sets floor under portfolio value.',calc:'Protective floor ≈ K - put premium (ignoring carry).',figure:'📘 Typical figure: covered call/protective put payoff overlays.'},
+    {id:'12.2',title:'Spreads',detail:'Bull/bear/butterfly spreads shape bounded risk-reward profiles.',example:'Bull call spread profits from moderate upside, capped max gain/loss.',calc:'Bull call max profit = (K2-K1)-(c1-c2).',figure:'📘 Typical figure: spread payoff plateau.'},
+    {id:'12.3',title:'Volatility combinations',detail:'Straddle/strangle monetize large moves; strip/strap bias direction.',example:'Long straddle profits if move exceeds total premium in either direction.',calc:'Straddle break-evens = K ± total premium.',figure:'📘 Typical figure: V-shaped long straddle payoff.'}
+  ]
+};
+
+function getTheorySections(levelIndex, lvl){
+  if(lvl.theorySections && lvl.theorySections.length) return lvl.theorySections;
+  const deep = deepTheoryByLevel[levelIndex] || [];
+  if(deep.length) return deep;
+  return (lvl.summary||[]).map((txt,i)=>({
+    id:`${levelIndex+1}.${i+1}`,
+    title:`Core concept ${i+1}`,
+    text:txt,
+    detail:'This concept connects to pricing, risk management, and trading decisions used in this chapter.',
+    example:'Apply this idea to a small numeric scenario before moving to practice.',
+    calc:'Try writing one formula relation from this concept and compute it with sample values.',
+    figure:'📘 If the textbook has a related figure/table, compare your interpretation with it.'
+  }));
+}
+
 const state = JSON.parse(localStorage.getItem('derivatives-state')||'{"current":0,"completed":[]}');
 if(!Array.isArray(state.completed)) state.completed=[];
 let selectedLevel = Math.min(state.current, course.length-1);
@@ -325,6 +404,34 @@ let levelsCollapsed = false;
 let focusMode = false;
 let adminOverride = false;
 const progressEl = document.getElementById('progress');
+const QUESTIONS_PER_ROUND = 10;
+const activeQuizzes = {};
+
+function shuffled(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function getQuestionBank(levelIndex){
+  const lvl = course[levelIndex];
+  return lvl.questionBank || lvl.quiz || [];
+}
+
+function ensureQuizSet(levelIndex, forceNew=false){
+  if(forceNew || !activeQuizzes[levelIndex]){
+    const bank = getQuestionBank(levelIndex);
+    const picked = shuffled(bank).slice(0, Math.min(QUESTIONS_PER_ROUND, bank.length));
+    activeQuizzes[levelIndex]=picked;
+    results[levelIndex]=Array(picked.length).fill(false);
+    qIndex=0;
+  }
+  return activeQuizzes[levelIndex];
+}
+
 
 function save(){localStorage.setItem('derivatives-state',JSON.stringify(state));}
 function isUnlocked(i){return adminOverride || i===0 || state.completed.includes(i-1);} 
@@ -388,7 +495,7 @@ function renderLevels(){
     const d=document.createElement('div');
     d.className='level '+(state.completed.includes(i)?'completed ':i===state.current?'current ':'')+(!isUnlocked(i)?'locked':'');
     d.innerHTML=`<div class="name">Level ${i+1} — ${c.title}</div><div class="status">${state.completed.includes(i)?'Completed':i===state.current?'Current':'Locked'}</div>`;
-    d.onclick=()=>{if(isUnlocked(i)){selectedLevel=i;renderContent();renderLevels();}};
+    d.onclick=()=>{if(isUnlocked(i)){selectedLevel=i;qIndex=0;ensureQuizSet(selectedLevel);renderContent();renderLevels();}};
     box.appendChild(d);
   });
   progressEl.textContent = `Completed levels: ${state.completed.length}/${course.length}`;
@@ -403,8 +510,9 @@ function renderContent(){
   th.style.display=currentTab==='theory'?'block':'none';
   calc.style.display=currentTab==='calculation'?'block':'none';
   pr.style.display=currentTab==='practice'?'block':'none';
-  const sectionsHtml = (lvl.theorySections&&lvl.theorySections.length)
-    ? `<div class="theory-sections">${lvl.theorySections.map((sec,idx)=>`<div class="theory-sec"><button class="theory-toggle" data-sec="${idx}">${sec.id} ${sec.title} ${idx===0?'(open)':''}</button><div class="theory-panel ${idx===0?'open':''}" data-panel="${idx}"><p>${sec.text}</p>${sec.detail?`<p>${sec.detail}</p>`:''}${sec.example?`<div class="theory-ex">🧠 Example: ${sec.example}</div>`:''}${sec.calc?`<div class="theory-calc">${sec.calc}</div>`:''}${sec.figure?`<div class="theory-fig">${sec.figure}</div>`:''}</div></div>`).join('')}</div>`
+  const theorySections = getTheorySections(selectedLevel, lvl);
+  const sectionsHtml = theorySections.length
+    ? `<div class="theory-sections">${theorySections.map((sec,idx)=>`<div class="theory-sec"><button class="theory-toggle" data-sec="${idx}">${sec.id} ${sec.title}</button><div class="theory-panel" data-panel="${idx}"><p>${sec.text||''}</p>${sec.detail?`<p>${sec.detail}</p>`:''}${sec.example?`<div class="theory-ex">🧠 Example: ${sec.example}</div>`:''}${sec.calc?`<div class="theory-calc">${sec.calc}</div>`:''}${sec.figure?`<div class="theory-fig">${sec.figure}</div>`:''}</div></div>`).join('')}</div>`
     : '';
   th.innerHTML=`<p>Introduction to the course and its core concepts. In this section, you will learn the fundamental ideas that serve as the foundation for the rest of the course.</p>
   <ul class="theory-summary">${lvl.summary.map(s=>`<li>${s}</li>`).join('')}</ul>
@@ -429,8 +537,8 @@ function renderContent(){
 let qIndex=0; let results={};
 
 function nextQuestion(){
-  const lvl=course[selectedLevel];
-  if(qIndex<lvl.quiz.length-1) qIndex++;
+  const quizSet=ensureQuizSet(selectedLevel);
+  if(qIndex<quizSet.length-1) qIndex++;
   renderPractice();
 }
 
@@ -578,18 +686,19 @@ function renderMostImportantCalculation(){
 }
 function renderPractice(){
   const lvl=course[selectedLevel];
-  if(!results[selectedLevel]) results[selectedLevel]=Array(lvl.quiz.length).fill(false);
-  const q=lvl.quiz[qIndex];
+  const quizSet=ensureQuizSet(selectedLevel);
+  const q=quizSet[qIndex];
   const alreadySolved = !!results[selectedLevel][qIndex];
   const done=results[selectedLevel].filter(Boolean).length;
   const pane=document.getElementById('practicePane');
   pane.innerHTML=`<div class="qcard">
-    <div class="qmeta"><span>Question ${qIndex+1}/${lvl.quiz.length}</span><span>Solved: ${done}/${lvl.quiz.length}</span></div>
+    <div class="qmeta"><span>Question ${qIndex+1}/${quizSet.length}</span><span>Solved: ${done}/${quizSet.length}</span></div>
     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin:6px 0 8px"><div>${q.q}</div><button class="btn" id="hintBtn" style="padding:6px 10px">💡 Hint</button></div>
     <div id="hint" class="hint">${q.hint}</div>
     <div id="answerArea"></div>
+    <div class="practice-tools"><button class="btn" id="reshuffleBtn" style="padding:6px 10px">🔀 New random set</button></div>
     <div class="feedback" id="fb">${alreadySolved?'✅ Already solved.':''}</div>
-    <div class="nav"><button class="btn" id="prev" ${qIndex===0?'disabled':''}>← Previous</button><button class="btn" id="next" ${qIndex===lvl.quiz.length-1?'disabled':''}>Next →</button></div>
+    <div class="nav"><button class="btn" id="prev" ${qIndex===0?'disabled':''}>← Previous</button><button class="btn" id="next" ${qIndex===quizSet.length-1?'disabled':''}>Next →</button></div>
   </div>`;
 
   const evaluateAnswer = (value)=>{
@@ -677,9 +786,10 @@ function renderPractice(){
 
   document.getElementById('hintBtn').onclick=()=>document.getElementById('hint').classList.toggle('show');
   const goPrev=()=>{qIndex=Math.max(0,qIndex-1);renderPractice();};
-  const goNext=()=>{qIndex=Math.min(lvl.quiz.length-1,qIndex+1);renderPractice();};
+  const goNext=()=>{qIndex=Math.min(quizSet.length-1,qIndex+1);renderPractice();};
   document.getElementById('prev').onclick=goPrev;
   document.getElementById('next').onclick=goNext;
+  document.getElementById('reshuffleBtn').onclick=()=>{ensureQuizSet(selectedLevel,true);renderPractice();};
 }
 function tryCompleteLevel(){
   const all=results[selectedLevel].every(Boolean);
@@ -694,7 +804,7 @@ document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{currentTab=b.dataset
 document.getElementById('toggleLevels').onclick=()=>{levelsCollapsed=!levelsCollapsed;renderLevels();};
 document.getElementById('focusToggle').onclick=()=>{focusMode=!focusMode;applyFocusMode();};
 document.getElementById('unlockStar').onclick=showUnlockPasswordPrompt;
-renderLevels();renderContent();applyFocusMode();
+renderLevels();ensureQuizSet(selectedLevel);renderContent();applyFocusMode();
 </script>
 </body>
 </html>
