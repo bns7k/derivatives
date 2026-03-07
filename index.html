@@ -1991,9 +1991,9 @@ function renderReview(){
   });
 
   const filtered = entries.filter(e=>{
-    if(reviewCategory==='wrong') return e.st.wrong>0;
+    if(reviewCategory==='wrong') return e.st.last==='wrong';
     if(reviewCategory==='unseen') return e.st.seen===0;
-    if(reviewCategory==='correct') return e.st.correct>0 && e.st.wrong===0;
+    if(reviewCategory==='correct') return e.st.last==='correct';
     return true;
   });
 
@@ -2003,7 +2003,7 @@ function renderReview(){
       <button class="btn" id="rvUnseen" style="padding:6px 10px">Not seen yet</button>
       <button class="btn" id="rvCorrect" style="padding:6px 10px">Well solved</button>
     </div>
-    ${filtered.length?filtered.map(e=>`<div class="review-item"><div>${e.q.q || e.q.title || 'Question'}</div><div class="review-meta">Seen: ${e.st.seen} | Correct: ${e.st.correct} | Wrong: ${e.st.wrong} | Last: ${e.st.last}</div></div>`).join(''):'<div class="review-meta">No questions in this category yet.</div>'}
+    ${filtered.length?filtered.map(e=>`<div class="review-item"><div>${e.q.q || e.q.title || 'Question'}</div><div class="review-meta">Seen: ${e.st.seen} | Correct: ${e.st.correct} | Wrong: ${e.st.wrong} | Last guess bucket: ${e.st.last==='correct'?'Well solved':e.st.last==='wrong'?'Previous mistake':'Not seen yet'}</div></div>`).join(''):'<div class="review-meta">No questions in this category yet.</div>'}
   </div>`;
 
   const setCat=(c)=>{reviewCategory=c; renderReview();};
