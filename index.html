@@ -72,6 +72,27 @@
     .focus-mode .layout{display:flex;justify-content:center;margin-top:0}
     .focus-mode #contentCard{width:min(980px,96vw)}
     .focus-mode .wrap{max-width:1100px}
+
+    body.light-theme{background:radial-gradient(circle at top,#e9eeff 0,#dfe7ff 40%,#d7e1ff 100%);color:#172554}
+    body.light-theme .card{background:rgba(255,255,255,.88);border-color:#b8c6ff}
+    body.light-theme .subtitle, body.light-theme .progress, body.light-theme .qmeta, body.light-theme .viz-note, body.light-theme .theory-fig{color:#4b5da8}
+    body.light-theme .level{background:#eef2ff;border-color:#9db0ff}
+    body.light-theme .level.current{box-shadow:0 0 0 2px rgba(99,102,241,.45),0 0 14px rgba(99,102,241,.22)}
+    body.light-theme .level.completed{background:linear-gradient(135deg,#dff7ea,#eaf0ff);border-color:#61c59a}
+    body.light-theme .tab{background:#e8edff;border-color:#9cb0ff;color:#1e2f7a}
+    body.light-theme .tab.active{background:#d8e1ff}
+    body.light-theme .qcard, body.light-theme .theory-sec, body.light-theme .formula-card{background:#f4f7ff;border-color:#a9b8ff}
+    body.light-theme .opt{background:#f8faff;border-color:#aab8ff;color:#1a2a70}
+    body.light-theme .opt.selected{background:#dfe7ff;border-color:#7c8ff0}
+    body.light-theme input[type="text"], body.light-theme #unlockInput{background:#ffffff;color:#1b2a6d;border-color:#9db0ff}
+    body.light-theme .hint, body.light-theme .popup-hint{background:#fff4da;border-color:#e0b85c;color:#7a5600}
+    body.light-theme .btn{background:#dfe6ff;border-color:#8ea2f0;color:#1b2f7a}
+    body.light-theme .theory-toggle{background:#e8edff;border-color:#98adff;color:#1f347d}
+    body.light-theme .theory-panel{background:#ffffff;border-color:#adc0ff}
+    body.light-theme .formula-eq, body.light-theme .theory-calc{background:#edf2ff;border-color:#a9bbff;color:#1e2f74}
+    body.light-theme .vchip{background:#e6ecff;border-color:#9cb1ff;color:#1d2e72}
+    body.light-theme .popup-card{background:#f6f8ff;border-color:#a2b3ff}
+
     @media (max-width:980px){.layout{grid-template-columns:1fr}.levels{grid-template-columns:repeat(3,1fr)}}
   </style>
 </head>
@@ -93,6 +114,7 @@
       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
         <h2 id="levelTitle" style="margin:0"></h2>
         <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn" id="themeToggle" style="padding:6px 10px">Theme: Dark</button>
           <button class="btn star-btn" id="unlockStar" title="Unlock levels">⭐</button>
           <button class="btn" id="focusToggle" style="padding:6px 10px">Focus Mode: Off</button>
         </div>
@@ -265,6 +287,133 @@ const course = [
 ]}
 ];
 
+
+
+const chapter2QuestionBank = [
+  {type:'mcq',q:'What is the main function of the Clearinghouse in a futures exchange?',options:['To provide investment advice to speculators.','To act as an intermediary and guarantee that both parties fulfill their obligations.','To set the spot prices for commodities.','To prevent hedgers from entering the market.'],a:'To act as an intermediary and guarantee that both parties fulfill their obligations.',hint:'Clearinghouse stands between buyer and seller.'},
+  {type:'mcq',q:'Which of the following best describes "Mark-to-Market"?',options:['Calculating the total profit only at the end of the contract.','The daily settlement of gains and losses based on the new closing price.','The physical delivery of an asset to a warehouse.','A strategy used only by arbitrageurs to find price gaps.'],a:'The daily settlement of gains and losses based on the new closing price.',hint:'Futures are settled every day.'},
+  {type:'mcq',q:'What happens if a trader\'s margin account balance falls below the Maintenance Margin?',options:['The trader is banned from the exchange.','The trader receives a Margin Call to bring the balance back to the Initial Margin level.','The trader receives a Margin Call to bring the balance back to the Maintenance level.','The exchange automatically doubles the position.'],a:'The trader receives a Margin Call to bring the balance back to the Initial Margin level.',hint:'Top-up target is initial margin.'},
+  {type:'mcq',q:'A "Long Position" in futures profits when:',options:['The futures price decreases.','The futures price increases.','The interest rates decrease.','The volatility of the asset disappears.'],a:'The futures price increases.',hint:'Long = benefits from price rise.'},
+  {type:'mcq',q:'What is the "Initial Margin"?',options:['The total value of the futures contract.','The maximum amount a trader can lose.','The amount of cash or collateral required to open a futures position.','The fee paid to the broker for every trade.'],a:'The amount of cash or collateral required to open a futures position.',hint:'It is posted at trade entry.'},
+  {type:'mcq',q:'Convergence of futures prices means that as the delivery date approaches:',options:['The futures price must equal the spot price (F = S).','The futures price must be exactly double the spot price.','The spot price drops to zero.','The trading volume decreases.'],a:'The futures price must equal the spot price (F = S).',hint:'At delivery they converge.'},
+  {type:'mcq',q:'If F > S at maturity, an arbitrageur would:',options:['Buy the futures and sell the spot.','Sell the futures, buy the spot, and deliver the asset.','Do nothing, as no profit is possible.','Short the stock and buy a call option.'],a:'Sell the futures, buy the spot, and deliver the asset.',hint:'Cash-and-carry arbitrage.'},
+  {type:'mcq',q:'Which is NOT a standard specification of a futures contract?',options:['The asset quality/grade.','The contract size.','The names of the two individuals trading with each other.','The delivery location.'],a:'The names of the two individuals trading with each other.',hint:'Futures are anonymous via clearinghouse.'},
+  {type:'mcq',q:'Most futures contracts are settled by:',options:['Physical delivery of the asset.','Offsetting (closing out) the position before maturity.','Exchanging the asset for government bonds.','A legal trial between the buyer and seller.'],a:'Offsetting (closing out) the position before maturity.',hint:'Most contracts are closed before delivery.'},
+  {type:'mcq',q:'Who has the "Delivery Option" in a futures contract?',options:['The Exchange.','The Long party (Buyer).','The Short party (Seller).','The Clearinghouse.'],a:'The Short party (Seller).',hint:'Seller usually chooses delivery details.'},
+  {type:'mcq',q:'What is "Open Interest"?',options:['The total number of contracts traded during a single day.','The total number of contracts currently outstanding (not yet closed or delivered).','The interest rate earned on a margin account.','The number of people watching the ticker.'],a:'The total number of contracts currently outstanding (not yet closed or delivered).',hint:'Outstanding, not daily volume.'},
+  {type:'mcq',q:'A Limit Order at $100 for a long position means:',options:['Buy only if the price is $100 or higher.','Buy only if the price is $100 or lower.','Sell immediately if the price hits $100.','Cancel the trade if the price hits $100.'],a:'Buy only if the price is $100 or lower.',hint:'Limit buy sets max acceptable buy price.'},
+  {type:'mcq',q:'Maintenance Margin is usually set at:',options:['100% of initial margin.','About 75% to 80% of initial margin.','Zero.','Double the contract value.'],a:'About 75% to 80% of initial margin.',hint:'Lower than initial margin.'},
+  {type:'mcq',q:'What is the Settlement Price?',options:['The first price of the day.','The price used to calculate daily gains/losses (often near close).','The historical delivery price.','The government-set price.'],a:'The price used to calculate daily gains/losses (often near close).',hint:'Used for mark-to-market.'},
+  {type:'mcq',q:'A Stop-Loss order is used to:',options:['Maximize potential profits.','Close a position automatically when the price reaches a level to prevent further loss.','Guarantee the lowest buy of the day.','Avoid broker commissions.'],a:'Close a position automatically when the price reaches a level to prevent further loss.',hint:'Risk control order.'},
+  {type:'mcq',q:'In OTC market, Counterparty Risk is:',options:['Non-existent because of Clearinghouse.','Higher than on exchange because there is no central guarantee.','Only a problem for retail investors.','Managed by daily physical delivery.'],a:'Higher than on exchange because there is no central guarantee.',hint:'Bilateral risk.'},
+  {type:'mcq',q:'What is Scalping?',options:['Holding position for years.','Very short-term trading for small profits.','Method of basis calculation.','A regulatory fine.'],a:'Very short-term trading for small profits.',hint:'Fast in-fast out style.'},
+  {type:'mcq',q:'What does Mark-to-Market prevent?',options:['Build-up of large unpaid losses.','Prices from changing.','People from buying options.','Exchange from making money.'],a:'Build-up of large unpaid losses.',hint:'Daily settlement contains credit exposure.'},
+  {type:'mcq',q:'When new long and new short open contracts:',options:['Open interest decreases.','Open interest increases.','Open interest stays the same.','Volume stays the same.'],a:'Open interest increases.',hint:'New contract pair adds OI.'},
+  {type:'mcq',q:'A Market Order is:',options:['Executed at best available current price.','Executed only at a specific chosen price.','Order to buy entire market.','Order that expires after 1 minute.'],a:'Executed at best available current price.',hint:'Immediate execution priority.'},
+  {type:'mcq',q:'Standardization of futures allows for:',options:['Higher liquidity.','Higher credit risk.','Private negotiations.','Unlimited delivery dates.'],a:'Higher liquidity.',hint:'Comparable contracts improve trading depth.'},
+  {type:'mcq',q:'If trader receives Variation Margin payment, it means:',options:['They lost money today.','Their position profited and cash is added.','They pay a fine.','Contract expired.'],a:'Their position profited and cash is added.',hint:'Positive MTM flow.'},
+  {type:'mcq',q:'Physical Delivery involves:',options:['Cash transfer of price difference only.','Warehouse receipt or actual transport of commodity.','Buying opposite contract.','Deleting contract from computer.'],a:'Warehouse receipt or actual transport of commodity.',hint:'Actual asset transfer process.'},
+  {type:'mcq',q:'The CFTC is:',options:['A London exchange.','US government agency regulating futures markets.','A margin account type.','An arbitrage strategy.'],a:'US government agency regulating futures markets.',hint:'US derivatives regulator.'},
+  {type:'mcq',q:'A Day Trade position is:',options:['Held exactly 24 hours.','Opened and closed within same trading day.','Only allowed for hedgers.','Always profitable.'],a:'Opened and closed within same trading day.',hint:'No overnight carry.'},
+  {type:'mcq',q:'What is a Price Limit?',options:['Max price speculator can pay.','Limit on daily futures price movement to reduce panic.','Minimum margin balance.','Clearinghouse fee.'],a:'Limit on daily futures price movement to reduce panic.',hint:'Exchange risk-control mechanism.'},
+  {type:'mcq',q:'What is a Position Limit?',options:['Maximum contracts one speculator can hold.','Total number of traders allowed.','Maximum loss allowed per day.','Length of delivery period.'],a:'Maximum contracts one speculator can hold.',hint:'Anti-manipulation constraint.'},
+  {type:'mcq',q:'Contango refers to:',options:['Futures price < Spot price.','Futures price > Spot price.','Futures price = Spot price.','Interest rates are zero.'],a:'Futures price > Spot price.',hint:'Upward-sloping forward structure.'},
+  {type:'mcq',q:'Backwardation refers to:',options:['Futures price < Spot price.','Futures price > Spot price.','No one wants to trade.','Prices only move backwards.'],a:'Futures price < Spot price.',hint:'Inverse curve state.'},
+  {type:'mcq',q:'A Short Position is often taken by:',options:['Producers of a commodity.','Consumers of a commodity.','People expecting price to rise.','Banks with no risk.'],a:'Producers of a commodity.',hint:'They hedge future sales.'},
+  {type:'mcq',q:'Basis in futures is defined as:',options:['Spot Price - Futures Price.','Spot Price + Futures Price.','Initial Margin / Maintenance Margin.','Current Price / Strike Price.'],a:'Spot Price - Futures Price.',hint:'S minus F.'},
+  {type:'mcq',q:'Cash Settlement is used for:',options:['Gold and Silver only.','Stock indices and Eurodollars.','All futures contracts.','Only defaulted contracts.'],a:'Stock indices and Eurodollars.',hint:'No easy physical delivery for those.'},
+  {type:'mcq',q:'Who sets Initial Margin levels?',options:['Government.','Individual traders.','Exchange.','Central Bank.'],a:'Exchange.',hint:'Clearing/risk team policy.'},
+  {type:'mcq',q:'A Speculator in futures:',options:['Avoids risk at all costs.','Takes risk to profit from price changes.','Only trades physical assets.','Never uses margin.'],a:'Takes risk to profit from price changes.',hint:'Risk-taking role.'},
+  {type:'mcq',q:'If you are Long and price drops, margin balance:',options:['Increases.','Decreases.','Stays the same.','Is doubled by exchange.'],a:'Decreases.',hint:'Long loses when price falls.'},
+  {type:'mcq',q:'A Notice of Intention to Deliver is issued by:',options:['Buyer.','Seller.','Broker.','Government.'],a:'Seller.',hint:'Short side initiates delivery notice.'},
+  {type:'mcq',q:'Marking to Market occurs at:',options:['End of every hour.','End of every trading day.','End of every month.','Only on request.'],a:'End of every trading day.',hint:'Daily settlement cycle.'},
+  {type:'mcq',q:'The Bid price is:',options:['Price you pay to buy.','Price you receive when you sell.','Government-set price.','Historical high price.'],a:'Price you receive when you sell.',hint:'Bid is what market bids to pay you.'},
+  {type:'mcq',q:'A Spread trade involves:',options:['Buying call and put.','Long one futures contract and short another related one.','Buying stock and bond.','Trading with no margin.'],a:'Long one futures contract and short another related one.',hint:'Relative-value position.'},
+  {type:'mcq',q:'Why can futures fluctuate more than spot for some commodities?',options:['Because they reflect future expectations and rates.','Because exchange forces them to move.','Because speculators are banned from spot market.','They always move exactly the same as spot.'],a:'Because they reflect future expectations and rates.',hint:'Forward-looking pricing.'},
+
+  {type:'calcVar',id:41,title:'The Gold Daily Settlement',hint:'Gain/Loss = N × 100 × (F_day1 - F_start).',vars:[['N',1,50,'int'],['F_start',1900,2500,'float'],['F_day1',1850,2550,'float']],
+   build:(v)=>({q:`A trader goes LONG on ${v.N} gold futures contracts (100 oz each). Entry price: ${v.F_start.toFixed(2)}. End of Day 1 settlement: ${v.F_day1.toFixed(2)}. Calculate Day 1 margin gain/loss.`,a:String(v.N*100*(v.F_day1-v.F_start))})},
+  {type:'calcVar',id:42,title:'Margin Call Alert',hint:'If B < M, deposit = I - B, else 0.',vars:[['I',5000,20000,'float'],['M',3500,16000,'float'],['B',2000,18000,'float']],
+   build:(v)=>({q:`Initial margin I=${v.I.toFixed(2)}, maintenance M=${v.M.toFixed(2)}, current balance B=${v.B.toFixed(2)}. How much additional cash must be deposited now? (0 if no margin call)`,a:String(v.B<v.M?(v.I-v.B):0)})},
+  {type:'calcVar',id:43,title:'Oil Producer Revenue',hint:'Futures P&L = N × 1000 × (F - S).',vars:[['N',10,100,'int'],['F',60,90,'float'],['S',50,100,'float']],
+   build:(v)=>({q:`An oil producer sold ${v.N} futures contracts (1,000 barrels each) at F=${v.F.toFixed(2)}. At maturity spot is S=${v.S.toFixed(2)}. Calculate total futures profit/loss.`,a:String(v.N*1000*(v.F-v.S))})},
+  {type:'calcVar',id:44,title:'T-Bill Discount Price',hint:'Cash price = 100 - (100 × R × 90/360).',vars:[['R',0.01,0.08,'float']],
+   build:(v)=>({q:`A 90-day T-bill futures uses discount rate R=${v.R.toFixed(4)}. Calculate cash price per $100 face value (360-day basis).`,a:String(100-(100*v.R*90/360))})},
+  {type:'calcVar',id:45,title:'Bitcoin Futures Leverage',hint:'Leverage = (S×N)/(I×N) = S/I.',vars:[['S',40000,80000,'float'],['I',2000,10000,'float'],['N',1,5,'int']],
+   build:(v)=>({q:`BTC spot S=${v.S.toFixed(2)}, margin per BTC I=${v.I.toFixed(2)}, amount N=${v.N}. Compute leverage ratio (position value / margin).`,a:String(v.S/v.I)})},
+  {type:'calcVar',id:46,title:'Closing Out a Copper Position',hint:'P&L = 5 × 25,000 × (F1 - F2).',vars:[['F1',3.5,4.5,'float'],['F2',3.2,4.8,'float']],
+   build:(v)=>({q:`Trader shorts 5 copper contracts at F1=${v.F1.toFixed(4)} and closes by buying at F2=${v.F2.toFixed(4)}. Contract size is 25,000 lbs. Compute total realized P&L.`,a:String(5*25000*(v.F1-v.F2))})},
+  {type:'calcVar',id:47,title:'Basis Calculation',hint:'Basis = S - F.',vars:[['S',5,8,'float'],['F',4.5,8.5,'float']],
+   build:(v)=>({q:`Spot S=${v.S.toFixed(3)}, futures F=${v.F.toFixed(3)}. Calculate basis (S-F).`,a:String(v.S-v.F)})},
+  {type:'calcVar',id:48,title:'Total Initial Margin Capital',hint:'Total capital = I × N.',vars:[['I',1500,6000,'float'],['N',5,200,'int']],
+   build:(v)=>({q:`Initial margin per contract I=${v.I.toFixed(2)}. Trader opens N=${v.N} contracts. Calculate total initial capital required.`,a:String(v.I*v.N)})},
+  {type:'calcVar',id:49,title:'Index Futures Multiplier P&L',hint:'Gain/Loss = M × (I2 - I1).',vars:[['M',20,250,'int'],['I1',3500,5000,'int'],['I2',3450,5050,'int']],
+   build:(v)=>({q:`Index multiplier M=${v.M}, index moves from I1=${v.I1} to I2=${v.I2}. Calculate gain/loss for one long contract.`,a:String(v.M*(v.I2-v.I1))})},
+  {type:'calcVar',id:50,title:'Arbitrage Profit Check',hint:'Fair F* = S × e^r ; arbitrage spread = F - F*.',vars:[['S',100,200,'float'],['F',105,220,'float'],['r',0.02,0.06,'float']],
+   build:(v)=>{const fair=v.S*Math.exp(v.r); return {q:`Spot S=${v.S.toFixed(3)}, observed 1Y futures F=${v.F.toFixed(3)}, rate r=${v.r.toFixed(4)}. Compute arbitrage spread per unit: F - S*e^r.`,a:String(v.F-fair)};}}
+];
+
+
+course[1].questionBank = chapter2QuestionBank;
+const theorySectionsByLevel = {
+  0: course[0].theorySections || [],
+  1: [
+    {id:'2.1-2.3',title:'Definitions, Specifications, and Convergence',text:'A futures contract is a standardized agreement to buy or sell an asset at price F at time T. Long agrees to buy (benefits when price rises), short agrees to sell (benefits when price falls).',detail:'Convergence logic: as delivery approaches, futures price F must move toward spot price S. If F > S, arbitrageurs can sell futures, buy spot asset, then deliver into futures. This pushes F down and S up until F≈S.',example:'At delivery, a futures trade effectively becomes a spot transaction, so prices must match (F = S).',calc:'Rule: If F > S near expiry, cash-and-carry arbitrage pressure should reduce F-S spread.',figure:'📘 Figure: spot and futures lines converging at maturity.'},
+    {id:'2.4',title:'Margin Accounts (Safety Net)',text:'Exchanges reduce credit risk using margin accounts. Initial margin (I) is posted when opening; maintenance margin (M) is the minimum balance.',detail:'If account falls below M, margin call requires topping up back to I (not only to M). Mark-to-market settles gains/losses daily.',example:'A long position with falling futures prices loses value daily and margin account is debited immediately.',calc:'Daily Gain/Loss = ΔP × L (price change × contract size).',figure:'📘 Figure: margin balance path with margin-call top-up to initial margin.'},
+    {id:'2.5-2.11',title:'OTC, Orders, and Delivery',text:'OTC = private bilateral contracts, more customization but higher counterparty risk. Order types include stop-loss and limit orders.',detail:'In many futures deliveries, short side has delivery option (grade/day choice within rules).',example:'Stop-loss triggers market order at threshold; limit order executes only at target price or better.',calc:'Execution logic check: stop-loss activates at trigger; limit only fills at acceptable price.',figure:'📘 Figure: order-flow examples and delivery-option timeline.'}
+  ],
+  2: [
+    {id:'3.1',title:'Basic Hedging Principles',text:'Hedging aims for price certainty, not pure profit maximization.',detail:'Short hedge is used when you own (or will own) an asset to sell later. Long hedge is used when you must buy in future.',example:'Exporter with future commodity sale may short futures now to lock price risk.',calc:'Direction rule: Future sale risk → short hedge; future purchase risk → long hedge.',figure:'📘 Figure: short vs long hedge payoff intuition.'},
+    {id:'3.3',title:'Basis Risk',text:'Basis = Spot Price − Futures Price.',detail:'If basis stays constant, hedge is close to perfect. If basis changes unexpectedly, residual risk remains.',example:'Strengthening basis (increase) generally helps short hedger; weakening basis helps long hedger.',calc:'If basis changes from +2 to +1, basis weakened by 1.',figure:'📘 Figure: basis time series with strengthening/weakening periods.'},
+    {id:'3.4',title:'Cross Hedging and Optimal Hedge Ratio',text:'Cross hedge is used when exact futures contract does not exist for your asset.',detail:'Minimum-variance hedge ratio h* = rho * (sigma_S / sigma_F). It is the risk-minimizing slope between spot and futures changes.',example:'Jet fuel exposure hedged using heating-oil futures with estimated h*.',calc:'h* = ρ × (σS/σF).',figure:'📘 Figure: regression slope interpretation of h*.'}
+  ],
+  3: [
+    {id:'4.1-4.2',title:'Continuous Compounding',text:'Core formula: A = P e^(rT), where A is future value, P principal, r continuous rate, T years.',detail:'Derivative pricing often assumes continuous compounding for consistent term-structure math.',example:'Small differences between periodic and continuous compounding accumulate over long horizons.',calc:'A = P·e^(rT).',figure:'📘 Figure: growth curve under continuous compounding.'},
+    {id:'4.8-4.9',title:'Duration and Convexity',text:'Duration measures first-order sensitivity of bond price to yield changes.',detail:'Approximation: ΔPrice ≈ -D × Price × Δy. Convexity corrects duration error for larger yield moves.',example:'When yields drop, bond prices rise; convexity means actual rise can exceed linear duration estimate.',calc:'Linear estimate: ΔP ≈ -P·D·Δy.',figure:'📘 Figure: curved price-yield line vs straight duration tangent.'},
+    {id:'4.x',title:'Practical Interpretation',text:'Use duration for quick risk estimate; use convexity for better accuracy under big shocks.',detail:'Portfolio-level duration helps compare interest-rate risk across strategies.',example:'Two portfolios with same value but different duration react very differently to rate shifts.',calc:'Higher D ⇒ bigger |ΔP| for same Δy.',figure:'📘 Figure: side-by-side sensitivity bars by duration.'}
+  ],
+  4: [
+    {id:'5.1-5.4',title:'Investment Asset Forward Pricing',text:'Golden formula: F0 = S0 e^(rT). F0 is fair forward price from spot S0 and financing at risk-free rate r.',detail:'If market forward is too high, arbitrageurs can borrow, buy spot, and short forward to lock spread.',example:'Cash-and-carry arbitrage enforces no-arbitrage relationship between spot and forward.',calc:'F0 = S0·e^(rT).',figure:'📘 Figure: cash-and-carry arbitrage flow.'},
+    {id:'5.5-5.6',title:'Known Income and Known Yield',text:'Known income (I): F0 = (S0 - I)e^(rT). Known yield (q): F0 = S0 e^((r-q)T).',detail:'Income (coupon/dividend) lowers effective carry cost for holding physical asset, reducing fair forward.',example:'Stock index futures adjust for dividend yield q.',calc:'Income adjustment lowers forward relative to no-income case.',figure:'📘 Figure: forward pricing with and without yield adjustment.'},
+    {id:'5.x',title:'Arbitrage Intuition',text:'No-arbitrage means synthetic strategies should not create free money after costs.',detail:'When pricing gaps appear, arbitrage trades compress them quickly.',example:'If observed F0 > theoretical F0, short forward + long spot/carry becomes attractive.',calc:'Spread = F_market - F_theoretical.',figure:'📘 Figure: mispricing and correction pathway.'}
+  ],
+  5: [
+    {id:'6.3',title:'Treasury Bond Futures and Conversion Factors',text:'Because deliverable bonds differ, exchanges apply conversion factors (CF) to normalize delivery economics.',detail:'Short side chooses cheapest-to-deliver (CTD) bond.',example:'Seller compares candidate bonds and delivers one with minimum effective cost.',calc:'Cost = Bond Price - (Futures Price × CF).',figure:'📘 Figure: CTD ranking table.'},
+    {id:'6.4',title:'Eurodollar Futures',text:'Eurodollar futures track 3-month rates (SOFR/LIBOR style). Quote convention: Price = 100 - R.',detail:'Inverse relationship: if expected rates fall, futures price rises, so long position benefits.',example:'Trader bullish on lower short-term rates can buy Eurodollar futures.',calc:'Price = 100 - R.',figure:'📘 Figure: inverse mapping between rate and quote.'},
+    {id:'6.x',title:'Practical Trading Logic',text:'Rate views are expressed through price changes in quoted futures contracts.',detail:'Small rate changes can produce meaningful contract P&L via multiplier.',example:'1 bp move in contract quote corresponds to fixed dollar impact per contract.',calc:'P&L ≈ bp move × contract bp value × number of contracts.',figure:'📘 Figure: rate scenario to P&L table.'}
+  ],
+  6: [
+    {id:'7.1-7.4',title:'Mechanics of Interest Rate Swaps',text:'Plain vanilla swap exchanges fixed-rate cash flows for floating-rate cash flows on notional L.',detail:'Payments are netted each period. Comparative advantage: firms borrow where stronger, then swap to desired exposure.',example:'Company A better in fixed market, B better in floating market; both reduce all-in cost via swap.',calc:'Payment = (R_L - R_K) × L × n.',figure:'📘 Figure: fixed pipe vs floating pipe, net bucket difference.'},
+    {id:'7.7-7.9',title:'Valuation of Interest Rate Swaps',text:'Swap can be valued as bond portfolio: V_swap = B_float - B_fixed (perspective dependent).',detail:'On reset dates, floating leg is near par; fixed leg drives most valuation movement between resets.',example:'If market fixed rates move, fixed-leg PV changes and swap MTM shifts.',calc:'V_swap = B_float - B_fixed.',figure:'📘 Figure: bond decomposition of swap value.'},
+    {id:'7.9+',title:'Currency Swaps',text:'Currency swaps exchange principal at start/end and interest streams in two currencies.',detail:'Valuation can be expressed as V = S·P_F - P_D (domestic perspective).',example:'Useful for transforming funding currency while matching liability structure.',calc:'V_swap = S × P_F - P_D.',figure:'📘 Figure: principal exchange + periodic coupon exchange in two currencies.'}
+  ],
+  7: [
+    {id:'8.1',title:'Securitization Basics',text:'Illiquid loans are pooled and transformed into tradable securities through tranching.',detail:'Senior, mezzanine, and equity tranches absorb risk in waterfall order.',example:'Equity tranche takes first losses; senior protected until lower tranches are exhausted.',calc:'Tranche loss allocation follows bottom-up waterfall.',figure:'📘 Figure: tranche waterfall stack.'},
+    {id:'8.2-8.4',title:'CDOs and Correlation in Crisis',text:'CDO structures amplified sensitivity to correlated defaults.',detail:'When house prices fell together, diversification assumptions failed and losses spread upward.',example:'Senior tranches suffered once equity/mezz layers were wiped out.',calc:'Remaining loss = Total loss - lower tranches absorbed.',figure:'📘 Figure: correlation shock impact on tranche losses.'},
+    {id:'8.5',title:'What Went Wrong',text:'Model errors, poor incentives, leverage, and opacity created systemic fragility.',detail:'Ratings and risk models underestimated joint default scenarios.',example:'Originate-to-distribute reduced incentive to maintain underwriting quality.',calc:'Leverage amplifies equity loss: small asset drop, large equity drawdown.',figure:'📘 Figure: leverage amplification loop.'}
+  ],
+  8: [
+    {id:'9.1-9.3',title:'OIS, LIBOR, and Policy Link',text:'Central-bank policy and interbank trust shape benchmark spreads like LIBOR-OIS.',detail:'Large LIBOR-OIS spread indicates elevated credit/liquidity stress.',example:'During crisis, spread spike signaled fear in unsecured interbank lending.',calc:'Spread (bps) = (LIBOR - OIS) × 10,000.',figure:'📘 Figure: LIBOR-OIS spread time series.'},
+    {id:'9.4',title:'Why OIS Discounting',text:'Post-crisis practice discounts many derivatives with OIS-like curves instead of LIBOR.',detail:'OIS better approximates near risk-free discounting in collateralized frameworks.',example:'Switching to lower discount curve raises PV of future inflows.',calc:'Lower r ⇒ higher PV for positive future cash flows.',figure:'📘 Figure: PV comparison under LIBOR vs OIS discounting.'},
+    {id:'9.5',title:'RFR Transition',text:'Markets are migrating to SOFR, SONIA, €STR and away from LIBOR.',detail:'Operationally requires fallback rules and new compounding conventions.',example:'Legacy contracts need benchmark replacement logic.',calc:'Compounded overnight rate replaces old term fixing in many products.',figure:'📘 Figure: benchmark migration timeline by currency.'}
+  ],
+  9: [
+    {id:'10.1-10.3',title:'Types, Positions, and Moneyness',text:'Call = right to buy, put = right to sell. ITM/ATM/OTM describe immediate exercise value.',detail:'Option buyer has right (not obligation); writer has obligation when exercised.',example:'Call ITM if S_T > K; put ITM if S_T < K.',calc:'Long call payoff at expiry = max(S_T-K,0).',figure:'📘 Figure: basic call/put payoff diagrams.'},
+    {id:'10.5-10.8',title:'Specifications and Corporate Actions',text:'Strikes and contract sizes can be adjusted for stock splits to preserve economics.',detail:'Split should not create artificial gain/loss from contract mechanics.',example:'2-for-1 split halves strike and doubles share count equivalent.',calc:'K_new = K_old × (1/n), N_new = N_old × n.',figure:'📘 Figure: pre/post split option terms table.'},
+    {id:'10.x',title:'Intrinsic and Time Value',text:'Premium = intrinsic value + time value.',detail:'Time value reflects remaining uncertainty before expiry.',example:'Deep ITM option can still trade above intrinsic due to time value.',calc:'Time value = Option price - Intrinsic value.',figure:'📘 Figure: decomposition bars (intrinsic vs time value).'}
+  ],
+  10: [
+    {id:'11.1',title:'Factors Affecting Option Prices',text:'Six key drivers: S0, K, T, sigma, r, dividends.',detail:'Calls and puts react differently to some inputs (e.g., rates/dividends), similarly to volatility.',example:'Higher sigma generally increases both call and put values.',calc:'Directional signs: ↑S0 ⇒ ↑call, ↓put; ↑K ⇒ ↓call, ↑put.',figure:'📘 Figure: sensitivity sign matrix.'},
+    {id:'11.3',title:'Put-Call Parity',text:'Core relation: c + K e^(-rT) = p + S0 for European options.',detail:'If parity breaks, arbitrageurs buy cheap side and sell rich side.',example:'Fiduciary call and protective put must have equivalent payoff at expiry.',calc:'p = c + K e^(-rT) - S0.',figure:'📘 Figure: synthetic replication comparison.'},
+    {id:'11.4',title:'Early Exercise Logic',text:'American call on non-dividend stock is usually not exercised early; American put can be.',detail:'Early call exercise sacrifices time value and financing benefit of delayed strike payment.',example:'Deep ITM put may be optimal to exercise early in low spot scenarios.',calc:'Immediate put exercise value = K - S (if positive).',figure:'📘 Figure: early-exercise decision tree.'}
+  ],
+  11: [
+    {id:'12.2',title:'Spreads (Bull, Bear, Butterfly)',text:'Spreads combine options to create bounded payoff structures.',detail:'Bull call spread: buy lower strike call, sell higher strike call; butterfly profits near middle strike.',example:'Use spread when you expect moderate move, not extreme tail outcome.',calc:'Bull spread max profit = (K2-K1) - net premium.',figure:'📘 Figure: spread payoff envelope.'},
+    {id:'12.3',title:'Combinations (Straddle/Strangle)',text:'Combinations mix calls and puts to express volatility views.',detail:'Long straddle profits from big move either direction; strangle is cheaper but needs larger move.',example:'Before earnings, trader may buy straddle expecting volatility jump.',calc:'Straddle break-even = K ± total premium.',figure:'📘 Figure: V-shape payoff with two break-even points.'},
+    {id:'12.x',title:'Strategy Selection Intuition',text:'Pick strategy by direction confidence and volatility expectation.',detail:'Income-style strategies like covered calls prefer calm markets; long-volatility structures prefer uncertainty.',example:'Protective put suits downside protection objective.',calc:'Map objective → strategy: protection, income, directional, volatility.',figure:'📘 Figure: strategy decision matrix.'}
+  ]
+};
+
 const optionalCalculations = {
   0:[{name:'Intro Quick Check',equation:'Basis = S - F',description:'Optional warm-up: measure the difference between spot and futures.',ranges:[['S',100,500,0],['F',95,480,0]],compute:v=>v.S-v.F}],
   1:[{name:'Futures Convergence Check',equation:'Basis = S - F',description:'Optional check of spot-futures gap in mechanics chapter.',ranges:[['S',100,500,0],['F',95,480,0]],compute:v=>v.S-v.F}],
@@ -318,84 +467,6 @@ function numFmt(v){
   return Number(v).toFixed(4).replace(/\.0+$/,'').replace(/(\.\d*?)0+$/,'$1');
 }
 
-const deepTheoryByLevel = {
-  0:[
-    {id:'1.1',title:'Exchange-traded markets',detail:'Standardized contracts, central clearing, strong transparency and liquidity.',example:'Gold futures with fixed lot size and listed expiries.',calc:'If 1 contract = 100 units and price rises by 2, long P&L = +200.',figure:'📘 Typical figure: clearinghouse flow and standardized contract table.'},
-    {id:'1.2',title:'OTC markets',detail:'Customized contracts between institutions; flexible but higher bilateral risk.',example:'Custom FX forward notional/date for a corporate payment.',calc:'Notional can be exactly matched to exposure, reducing mismatch risk.',figure:'📘 Typical figure: bilateral OTC network.'},
-    {id:'1.3',title:'Core instruments and trader roles',detail:'Forward/futures/options and the roles of hedgers, speculators, arbitrageurs.',example:'Hedger reduces risk, speculator seeks directional gain, arbitrageur enforces pricing links.',calc:'Long call profit = max(ST-K,0)-premium.',figure:'📘 Typical figure: payoff lines for forward/call/put.'}
-  ],
-  1:[
-    {id:'2.1',title:'Futures contract mechanics',detail:'Exchange defines asset, size, delivery terms, and listing cycles.',example:'One oil contract represents fixed barrels and listed months.',calc:'P&L per day = contract size × price change × number of contracts.',figure:'📘 Typical figure: futures contract specification table.'},
-    {id:'2.2',title:'Margins and marking-to-market',detail:'Initial/maintenance margins and daily settlement reduce credit buildup.',example:'Loss day lowers margin; below maintenance triggers margin call.',calc:'New margin = prior margin + daily P&L.',figure:'📘 Typical figure: margin account path over days.'},
-    {id:'2.3',title:'Convergence and delivery',detail:'Futures converges to spot near delivery due to arbitrage pressure.',example:'If futures too high near expiry, sell futures and buy spot.',calc:'Basis = Spot - Futures tends to 0 near expiry.',figure:'📘 Typical figure: spot/futures convergence chart.'}
-  ],
-  2:[
-    {id:'3.1',title:'Hedging logic',detail:'Short hedge for future sale risk; long hedge for future purchase risk.',example:'Producer sells futures to protect downside.',calc:'Hedge contracts ≈ exposure / contract size (adjusted by hedge ratio).',figure:'📘 Typical figure: hedged vs unhedged payoff.'},
-    {id:'3.2',title:'Basis risk and cross-hedge',detail:'Basis changes can hurt hedge precision; cross-hedge uses related asset futures.',example:'Jet fuel exposure hedged with heating oil futures.',calc:'h* = rho × (sigmaS / sigmaF).',figure:'📘 Typical figure: basis strengthening/weakening impact.'},
-    {id:'3.3',title:'Portfolio hedge with index futures',detail:'Use beta to scale hedge for systematic equity risk.',example:'High-beta portfolio needs more index futures.',calc:'N = beta × (VP / VF).',figure:'📘 Typical figure: beta-neutralization concept.'}
-  ],
-  3:[
-    {id:'4.1',title:'Interest-rate conventions',detail:'Compounding/day-count conventions strongly affect valuation.',example:'Continuous compounding often used in derivatives pricing.',calc:'A = P × e^(rT).',figure:'📘 Typical figure: annual vs continuous growth.'},
-    {id:'4.2',title:'Zero and forward rates',detail:'Zero curve discounts cash flows; forwards are implied future period rates.',example:'Use zero rates to infer 1y-2y forward rate.',calc:'Rf = (R2T2 - R1T1)/(T2-T1).',figure:'📘 Typical figure: yield curve + implied forwards.'},
-    {id:'4.3',title:'Bond sensitivity',detail:'Duration/convexity approximate price response to yield changes.',example:'Long duration bonds move more for same yield shift.',calc:'ΔP ≈ -P×D×Δy (plus convexity correction).',figure:'📘 Typical figure: price-yield curve.'}
-  ],
-  4:[
-    {id:'5.1',title:'Cost-of-carry pricing',detail:'Forward/futures price links spot, financing, income, and carry.',example:'No-income asset uses F0 = S0e^(rT).',calc:'With yield q: F0 = S0e^((r-q)T).',figure:'📘 Typical figure: cash-and-carry replication.'},
-    {id:'5.2',title:'Investment vs consumption assets',detail:'Consumption assets include convenience yield effects and storage frictions.',example:'Oil futures may sit below simple carry model due to convenience yield.',calc:'F0 = S0e^((c-y)T).',figure:'📘 Typical figure: convenience-yield intuition.'},
-    {id:'5.3',title:'Contract valuation over time',detail:'Forward value drifts from zero as market forward changes.',example:'Long forward gains when current forward > delivery price K.',calc:'f = (F-K)e^(-rT).',figure:'📘 Typical figure: forward value timeline.'}
-  ],
-  5:[
-    {id:'6.1',title:'Treasury futures basics',detail:'Quoted in points/32nds; conversion factors normalize deliverables.',example:'Short chooses cheapest-to-deliver bond.',calc:'Cash quote 102-12 = 102 + 12/32.',figure:'📘 Typical figure: CTD selection process.'},
-    {id:'6.2',title:'Eurodollar/short-rate futures',detail:'Quote is 100-R; price falls when rates rise.',example:'Short Eurodollar profits when quote declines.',calc:'1 bp move ≈ $25 per contract.',figure:'📘 Typical figure: quote-rate inversion.'},
-    {id:'6.3',title:'Duration hedge sizing',detail:'Match portfolio rate sensitivity with futures sensitivity.',example:'Use contract count to offset parallel shifts.',calc:'N = (P×DP)/(VF×DF).',figure:'📘 Typical figure: DV01 matching concept.'}
-  ],
-  6:[
-    {id:'7.1',title:'Interest-rate swaps',detail:'Exchange fixed vs floating on notional, usually net-settled.',example:'Convert floating-rate debt into fixed effective cost.',calc:'CF = (Rfloat-Rfixed)×L×(n/360).',figure:'📘 Typical figure: swap cash-flow legs.'},
-    {id:'7.2',title:'Comparative advantage idea',detail:'Firms borrow where they have advantage, then swap into desired profile.',example:'One firm fixed-advantaged, another floating-advantaged.',calc:'Net benefit shared via swap spread.',figure:'📘 Typical figure: pre/post-swap borrowing costs.'},
-    {id:'7.3',title:'Valuation and credit risk',detail:'Swap valued as fixed bond minus floating bond; positive MTM implies counterparty risk.',example:'If rates move in your favor, your exposure to default increases.',calc:'Swap PV = PV(receive leg)-PV(pay leg).',figure:'📘 Typical figure: MTM over time.'}
-  ],
-  7:[
-    {id:'8.1',title:'Securitization structure',detail:'Loans pooled into SPV, then tranched by risk priority.',example:'Senior tranche paid first, equity takes first losses.',calc:'Losses waterfall upward from equity to mezzanine to senior.',figure:'📘 Typical figure: tranche waterfall.'},
-    {id:'8.2',title:'CDOs and correlation risk',detail:'Re-securitization amplified dependence on correlated defaults.',example:'Housing downturn triggered simultaneous losses.',calc:'If equity exhausted, remaining loss hits mezzanine.',figure:'📘 Typical figure: correlated default effect.'},
-    {id:'8.3',title:'Crisis lessons',detail:'Incentives, leverage, opacity, and model risk can destabilize the system.',example:'Volume-driven origination weakened underwriting quality.',calc:'Higher leverage magnifies loss impact on equity.',figure:'📘 Typical figure: leverage-loss amplification.'}
-  ],
-  8:[
-    {id:'9.1',title:'Policy rates and overnight markets',detail:'Central banks steer short rates through policy and liquidity tools.',example:'Fed funds/repo operations influence funding conditions.',calc:'Lower discount rate increases PV of future inflows.',figure:'📘 Typical figure: policy transmission chain.'},
-    {id:'9.2',title:'LIBOR vs OIS',detail:'LIBOR contains bank credit premium; OIS is closer to risk-free benchmark.',example:'Post-crisis valuation moved to OIS discounting.',calc:'Spread (bps) = (LIBOR-OIS)×10000.',figure:'📘 Typical figure: spread spike during stress.'},
-    {id:'9.3',title:'RFR transition',detail:'Markets migrated from LIBOR to SOFR/SONIA/€STR frameworks.',example:'USD derivatives now primarily collateral-discounted on SOFR curves.',calc:'Term conversion requires robust day-count and compounding conventions.',figure:'📘 Typical figure: benchmark transition timeline.'}
-  ],
-  9:[
-    {id:'10.1',title:'Option contract basics',detail:'Calls/puts, strike, expiry, contract size, and exercise style define payoff.',example:'American options exercisable anytime; European only at expiry.',calc:'Intrinsic(call)=max(S-K,0), intrinsic(put)=max(K-S,0).',figure:'📘 Typical figure: ITM/ATM/OTM zones.'},
-    {id:'10.2',title:'Market mechanics and moneyness',detail:'Premium = intrinsic + time value; time value decays toward expiry.',example:'Deep ITM option has high intrinsic but still can carry time value.',calc:'Time value = premium - intrinsic.',figure:'📘 Typical figure: decomposition of premium.'},
-    {id:'10.3',title:'Position obligations',detail:'Buyer has right, seller has obligation if exercised.',example:'Short naked call has theoretically unlimited loss.',calc:'Long call profit = max(ST-K,0)-c.',figure:'📘 Typical figure: long/short option payoff pairs.'}
-  ],
-  10:[
-    {id:'11.1',title:'Option price drivers',detail:'S, K, T, sigma, r, dividends jointly shape option values.',example:'Higher volatility usually raises both call and put value.',calc:'Sensitivity intuition: vega positive for both calls/puts.',figure:'📘 Typical figure: price vs volatility slope.'},
-    {id:'11.2',title:'Put-call parity',detail:'No-arbitrage relationship ties call, put, spot, and discounted strike.',example:'Violation implies synthetic mispricing trade.',calc:'c + Ke^(-rT) = p + S0.',figure:'📘 Typical figure: synthetic equivalence diagram.'},
-    {id:'11.3',title:'Bounds and early exercise',detail:'Bounds prevent impossible prices; early exercise rules differ by option type/dividends.',example:'American call on non-dividend stock usually not exercised early.',calc:'Lower bound call ≥ max(S0-Ke^(-rT),0).',figure:'📘 Typical figure: feasible price region.'}
-  ],
-  11:[
-    {id:'12.1',title:'Single-option stock strategies',detail:'Covered call trades upside for premium; protective put buys downside insurance.',example:'Protective put sets floor under portfolio value.',calc:'Protective floor ≈ K - put premium (ignoring carry).',figure:'📘 Typical figure: covered call/protective put payoff overlays.'},
-    {id:'12.2',title:'Spreads',detail:'Bull/bear/butterfly spreads shape bounded risk-reward profiles.',example:'Bull call spread profits from moderate upside, capped max gain/loss.',calc:'Bull call max profit = (K2-K1)-(c1-c2).',figure:'📘 Typical figure: spread payoff plateau.'},
-    {id:'12.3',title:'Volatility combinations',detail:'Straddle/strangle monetize large moves; strip/strap bias direction.',example:'Long straddle profits if move exceeds total premium in either direction.',calc:'Straddle break-evens = K ± total premium.',figure:'📘 Typical figure: V-shaped long straddle payoff.'}
-  ]
-};
-
-function getTheorySections(levelIndex, lvl){
-  if(lvl.theorySections && lvl.theorySections.length) return lvl.theorySections;
-  const deep = deepTheoryByLevel[levelIndex] || [];
-  if(deep.length) return deep;
-  return (lvl.summary||[]).map((txt,i)=>({
-    id:`${levelIndex+1}.${i+1}`,
-    title:`Core concept ${i+1}`,
-    text:txt,
-    detail:'This concept connects to pricing, risk management, and trading decisions used in this chapter.',
-    example:'Apply this idea to a small numeric scenario before moving to practice.',
-    calc:'Try writing one formula relation from this concept and compute it with sample values.',
-    figure:'📘 If the textbook has a related figure/table, compare your interpretation with it.'
-  }));
-}
-
 const state = JSON.parse(localStorage.getItem('derivatives-state')||'{"current":0,"completed":[]}');
 if(!Array.isArray(state.completed)) state.completed=[];
 let selectedLevel = Math.min(state.current, course.length-1);
@@ -403,6 +474,7 @@ let currentTab='theory';
 let levelsCollapsed = false;
 let focusMode = false;
 let adminOverride = false;
+let lightTheme = false;
 const progressEl = document.getElementById('progress');
 const QUESTIONS_PER_ROUND = 10;
 const activeQuizzes = {};
@@ -416,6 +488,21 @@ function shuffled(arr){
   return a;
 }
 
+function randByType(min,max,type){
+  const n=min + Math.random()*(max-min);
+  return type==='int' ? Math.floor(n) : Number(n.toFixed(4));
+}
+
+function materializeQuestion(q){
+  if(q.type==='calcVar' && q.build && q.vars){
+    const vals={};
+    q.vars.forEach(([k,min,max,t])=>vals[k]=randByType(min,max,t));
+    const built=q.build(vals);
+    return {type:'calc',q:built.q,a:String(built.a),hint:q.hint};
+  }
+  return {...q};
+}
+
 function getQuestionBank(levelIndex){
   const lvl = course[levelIndex];
   return lvl.questionBank || lvl.quiz || [];
@@ -424,7 +511,17 @@ function getQuestionBank(levelIndex){
 function ensureQuizSet(levelIndex, forceNew=false){
   if(forceNew || !activeQuizzes[levelIndex]){
     const bank = getQuestionBank(levelIndex);
-    const picked = shuffled(bank).slice(0, Math.min(QUESTIONS_PER_ROUND, bank.length));
+    const calcPool = bank.filter(q=>q.type==='calc' || q.type==='calcVar');
+    const mcqPool = bank.filter(q=>q.type==='mcq');
+    const total = Math.min(QUESTIONS_PER_ROUND, bank.length);
+    const desiredCalcRaw = 2 + Math.floor(Math.random()*2); // 2 or 3
+    const calcCount = Math.max(0, Math.min(desiredCalcRaw, calcPool.length, total));
+    const mcqCount = Math.max(0, total - calcCount);
+
+    const pickedCalc = shuffled(calcPool).slice(0, calcCount);
+    const pickedMcq = shuffled(mcqPool).slice(0, mcqCount);
+    const picked = shuffled([...pickedCalc, ...pickedMcq]).map(materializeQuestion);
+
     activeQuizzes[levelIndex]=picked;
     results[levelIndex]=Array(picked.length).fill(false);
     qIndex=0;
@@ -447,6 +544,12 @@ function applyFocusMode(){
   document.body.classList.toggle('focus-mode', focusMode);
   const b=document.getElementById('focusToggle');
   if(b) b.textContent = `Focus Mode: ${focusMode?'On':'Off'}`;
+}
+
+function applyTheme(){
+  document.body.classList.toggle('light-theme', lightTheme);
+  const b=document.getElementById('themeToggle');
+  if(b) b.textContent = `Theme: ${lightTheme?'Light':'Dark'}`;
 }
 
 function showUnlockPasswordPrompt(){
@@ -510,9 +613,9 @@ function renderContent(){
   th.style.display=currentTab==='theory'?'block':'none';
   calc.style.display=currentTab==='calculation'?'block':'none';
   pr.style.display=currentTab==='practice'?'block':'none';
-  const theorySections = getTheorySections(selectedLevel, lvl);
-  const sectionsHtml = theorySections.length
-    ? `<div class="theory-sections">${theorySections.map((sec,idx)=>`<div class="theory-sec"><button class="theory-toggle" data-sec="${idx}">${sec.id} ${sec.title}</button><div class="theory-panel" data-panel="${idx}"><p>${sec.text||''}</p>${sec.detail?`<p>${sec.detail}</p>`:''}${sec.example?`<div class="theory-ex">🧠 Example: ${sec.example}</div>`:''}${sec.calc?`<div class="theory-calc">${sec.calc}</div>`:''}${sec.figure?`<div class="theory-fig">${sec.figure}</div>`:''}</div></div>`).join('')}</div>`
+  const theorySections = (lvl.theorySections&&lvl.theorySections.length) ? lvl.theorySections : (theorySectionsByLevel[selectedLevel]||[]);
+  const sectionsHtml = (theorySections&&theorySections.length)
+    ? `<div class="theory-sections">${theorySections.map((sec,idx)=>`<div class="theory-sec"><button class="theory-toggle" data-sec="${idx}">${sec.id} ${sec.title}</button><div class="theory-panel" data-panel="${idx}"><p>${sec.text}</p>${sec.detail?`<p>${sec.detail}</p>`:''}${sec.example?`<div class="theory-ex">🧠 Example: ${sec.example}</div>`:''}${sec.calc?`<div class="theory-calc">${sec.calc}</div>`:''}${sec.figure?`<div class="theory-fig">${sec.figure}</div>`:''}</div></div>`).join('')}</div>`
     : '';
   th.innerHTML=`<p>Introduction to the course and its core concepts. In this section, you will learn the fundamental ideas that serve as the foundation for the rest of the course.</p>
   <ul class="theory-summary">${lvl.summary.map(s=>`<li>${s}</li>`).join('')}</ul>
@@ -803,8 +906,9 @@ function pop(msg){const d=document.createElement('div');d.className='unlock-pop'
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{currentTab=b.dataset.tab;renderContent();});
 document.getElementById('toggleLevels').onclick=()=>{levelsCollapsed=!levelsCollapsed;renderLevels();};
 document.getElementById('focusToggle').onclick=()=>{focusMode=!focusMode;applyFocusMode();};
+document.getElementById('themeToggle').onclick=()=>{lightTheme=!lightTheme;applyTheme();};
 document.getElementById('unlockStar').onclick=showUnlockPasswordPrompt;
-renderLevels();ensureQuizSet(selectedLevel);renderContent();applyFocusMode();
+renderLevels();ensureQuizSet(selectedLevel);renderContent();applyFocusMode();applyTheme();
 </script>
 </body>
 </html>
