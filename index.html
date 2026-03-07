@@ -1069,6 +1069,7 @@ let ultraRoundActive = false;
 let ultraCorrectCount = 0;
 let ultraQuestionTimerId = null;
 let ultraQuestionRemaining = 0;
+let ultraVideoIframe = null;
 
 function saveSettings(){
   localStorage.setItem('derivatives-settings', JSON.stringify({
@@ -1715,6 +1716,17 @@ function renderMostImportantCalculation(){
     }
   });
 }
+function getPersistentUltraVideoIframe(){
+  if(ultraVideoIframe) return ultraVideoIframe;
+  const iframe=document.createElement('iframe');
+  iframe.src='https://www.youtube.com/embed/OO14VSx74MU?start=11&autoplay=1&mute=1&rel=0';
+  iframe.title='Ultra focus video';
+  iframe.setAttribute('allow','autoplay; encrypted-media');
+  iframe.setAttribute('allowfullscreen','');
+  ultraVideoIframe = iframe;
+  return ultraVideoIframe;
+}
+
 function renderPractice(){
   clearUltraQuestionTimer();
   const pane=document.getElementById('practicePane');
@@ -1736,7 +1748,10 @@ function renderPractice(){
       <div class="settings-help" style="margin-top:8px">No back/forward, no retry. One attempt per question.</div>
       <div class="feedback" id="fb"></div>
     </div>
-    <div class="ultra-video"><iframe src="https://www.youtube.com/embed/OO14VSx74MU?start=11&autoplay=1&mute=1&rel=0" title="Ultra focus video" allow="autoplay; encrypted-media" allowfullscreen></iframe></div></div>`;
+    <div class="ultra-video" id="ultraVideoMount"></div></div>`;
+
+    const videoMount=document.getElementById('ultraVideoMount');
+    if(videoMount) videoMount.appendChild(getPersistentUltraVideoIframe());
 
     const timerEl=document.getElementById('ultraTimer');
     let answered=false;
