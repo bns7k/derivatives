@@ -1256,19 +1256,49 @@ function getQuestionBank(levelIndex){
   return lvl.questionBank || lvl.quiz || [];
 }
 
+function questionPriorityWeight(st){
+  if(!st || st.seen===0 || st.last==='unseen') return 4.0; // prefer unseen
+  if(st.last==='wrong') return 1.8 + Math.min(0.6, st.wrong*0.1); // slightly prefer previously missed
+  if(st.last==='correct' && st.wrong===0) return 0.25; // well-solved least likely
+  return 1.0; // mixed history
+}
+
+function weightedPick(pool, count, levelIndex){
+  const available=[...pool];
+  const picked=[];
+  while(available.length && picked.length<count){
+    const weights = available.map(it=>{
+      const key = sourceKeyForQuestionTemplate(it.q, levelIndex, it.bankIdx);
+      const st = answerMemory[key] || {seen:0,correct:0,wrong:0,last:'unseen'};
+      return questionPriorityWeight(st);
+    });
+    const totalW = weights.reduce((a,b)=>a+b,0);
+    let r = Math.random() * (totalW || 1);
+    let pickIndex = 0;
+    for(let i=0;i<available.length;i++){
+      r -= weights[i];
+      if(r<=0){ pickIndex=i; break; }
+    }
+    picked.push(available[pickIndex]);
+    available.splice(pickIndex,1);
+  }
+  return picked;
+}
+
 function ensureQuizSet(levelIndex, forceNew=false){
   if(forceNew || !activeQuizzes[levelIndex]){
     const bank = getQuestionBank(levelIndex);
-    const calcPool = bank.filter(q=>q.type==='calc' || q.type==='calcVar');
-    const mcqPool = bank.filter(q=>q.type==='mcq');
+    const bankEntries = bank.map((q,bankIdx)=>({q,bankIdx}));
+    const calcPool = bankEntries.filter(it=>it.q.type==='calc' || it.q.type==='calcVar');
+    const mcqPool = bankEntries.filter(it=>it.q.type==='mcq');
     const total = Math.min(QUESTIONS_PER_ROUND, bank.length);
     const desiredCalcRaw = 2 + Math.floor(Math.random()*2); // 2 or 3
     const calcCount = Math.max(0, Math.min(desiredCalcRaw, calcPool.length, total));
     const mcqCount = Math.max(0, total - calcCount);
 
-    const pickedCalc = shuffled(calcPool).slice(0, calcCount);
-    const pickedMcq = shuffled(mcqPool).slice(0, mcqCount);
-    const picked = shuffled([...pickedCalc, ...pickedMcq]).map((q,idx)=>materializeQuestion(q, levelIndex, idx));
+    const pickedCalc = weightedPick(calcPool, calcCount, levelIndex);
+    const pickedMcq = weightedPick(mcqPool, mcqCount, levelIndex);
+    const picked = shuffled([...pickedCalc, ...pickedMcq]).map(it=>materializeQuestion(it.q, levelIndex, it.bankIdx));
 
     activeQuizzes[levelIndex]=picked;
     results[levelIndex]=Array(picked.length).fill(false);
@@ -1857,6 +1887,7 @@ function renderPractice(){
       <div class="practice-tools" style="margin-top:10px">
         ${passed && selectedLevel<course.length-1?'<button class="btn" id="nextLevelBtn" style="padding:6px 10px">➡️ Go to next level theory</button>':''}
         ${passed && selectedLevel>=course.length-1?'<span class="feedback good">🎉 You finished the last level.</span>':''}
+        ${passed?'<button class="btn" id="practiceMoreBtn" style="padding:6px 10px">🎯 Further practice on this level</button>':''}
         ${!passed?'<button class="btn" id="retryRoundBtn" style="padding:6px 10px">🔁 Retry 10-question round</button>':''}
       </div>
     </div>`;
@@ -1876,6 +1907,8 @@ function renderPractice(){
       };
     }
 
+    const pmbtn=document.getElementById('practiceMoreBtn');
+    if(pmbtn) pmbtn.onclick=()=>{ensureQuizSet(selectedLevel,true); renderPractice();};
     const rbtn=document.getElementById('retryRoundBtn');
     if(rbtn) rbtn.onclick=()=>{ensureQuizSet(selectedLevel,true); renderPractice();};
     return;
@@ -1890,10 +1923,15 @@ function renderPractice(){
   const actualIdx=practiceIndexes[qIndex];
   const q=quizSet[actualIdx];
   const alreadyAnswered = !!answered[actualIdx];
+  const hist = answerMemory[getQuestionKey(q, selectedLevel, actualIdx)] || {seen:0,correct:0,wrong:0,last:'unseen'};
+  const prevMistakeInfo = hist.last==='wrong'
+    ? `<div class="settings-help" style="margin:6px 0 4px">⚠️ You missed a similar question before (seen: ${hist.seen}, wrong: ${hist.wrong}).</div>`
+    : '';
 
   pane.innerHTML=`<div class="qcard">
     <div class="qmeta"><span>Question ${answeredCount+1}/${total}</span><span>Correct: ${correctCount}/${total}</span></div>
     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin:6px 0 8px"><div>${q.q}</div><button class="btn" id="hintBtn" style="padding:6px 10px">💡 Hint</button></div>
+    ${prevMistakeInfo}
     <div id="hint" class="hint">${q.hint}</div>
     <div id="answerArea"></div>
     <div class="practice-tools">${answeredCount===0?'<button class="btn" id="reshuffleBtn" style="padding:6px 10px">🔀 New random set</button>':''}</div>
@@ -1932,8 +1970,8 @@ function renderPractice(){
 
     window.onkeydown=(e)=>{
       const k=e.key.toLowerCase();
-      if(k==='arrowleft' || k==='a'){ goPrev(); return; }
-      if(k==='arrowright' || k==='d'){ goNext(); return; }
+      if(k==='a'){ goPrev(); return; }
+      if(k==='d'){ goNext(); return; }
       if(answeredByLevel[selectedLevel][actualIdx]) return;
       const n=Number(e.key);
       if(n>=1 && n<=q.options.length){
@@ -1961,8 +1999,8 @@ function renderPractice(){
     input.addEventListener('keydown',(e)=>{if(e.key==='Enter') submit();});
     window.onkeydown=(e)=>{
       const k=e.key.toLowerCase();
-      if(k==='arrowleft' || k==='a'){ goPrev(); return; }
-      if(k==='arrowright' || k==='d'){ goNext(); return; }
+      if(k==='a'){ goPrev(); return; }
+      if(k==='d'){ goNext(); return; }
       if(e.key==='Enter') submit();
     };
   }
