@@ -111,7 +111,7 @@
     body.light-theme .pomodoro-grid input[type="number"]{background:#ffffff;color:#1b2a6d;border-color:#9db0ff}
     body.light-theme .ultra-mode-badge{background:#fee2e2;color:#991b1b;border-color:#fecaca}
 
-    @media (max-width:980px){.layout{grid-template-columns:1fr}.levels{grid-template-columns:repeat(3,1fr)}}
+    @media (max-width:980px){.layout{grid-template-columns:1fr}.levels{grid-template-columns:repeat(3,1fr)}.ultra-layout{grid-template-columns:1fr}.ultra-video iframe{height:260px}}
   </style>
 </head>
 <body>
@@ -1745,6 +1745,17 @@ function renderMostImportantCalculation(){
     }
   });
 }
+function getPersistentUltraVideoIframe(){
+  if(ultraVideoIframe) return ultraVideoIframe;
+  const iframe=document.createElement('iframe');
+  iframe.src='https://www.youtube.com/embed/OO14VSx74MU?start=11&autoplay=1&mute=1&rel=0';
+  iframe.title='Ultra focus video';
+  iframe.setAttribute('allow','autoplay; encrypted-media');
+  iframe.setAttribute('allowfullscreen','');
+  ultraVideoIframe = iframe;
+  return ultraVideoIframe;
+}
+
 function renderPractice(){
   clearUltraQuestionTimer();
   const pane=document.getElementById('practicePane');
