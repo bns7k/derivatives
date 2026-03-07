@@ -1,0 +1,52 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.derivatives.course'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.derivatives.course"
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+def webRootDir = file("${rootDir}/../")
+def webIndex = file("${webRootDir}/index.html")
+def webPdf = file("${webRootDir}/options.pdf")
+def androidAssetsDir = file("${projectDir}/src/main/assets")
+
+tasks.register('syncWebAssets', Copy) {
+    from(webIndex, webPdf)
+    into(androidAssetsDir)
+    doFirst {
+        if (!webIndex.exists() || !webPdf.exists()) {
+            throw new GradleException("Missing web assets in repo root: index.html and options.pdf are required.")
+        }
+    }
+}
+
+preBuild.dependsOn(tasks.named('syncWebAssets'))
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.webkit:webkit:1.11.0'
+}
