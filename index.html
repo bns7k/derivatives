@@ -1364,7 +1364,7 @@ function calcMatch(ans,input){
   const na=normalize(ans), ni=normalize(input);
   if(na===ni) return true;
   const anum=parseFloat(na), inum=parseFloat(ni);
-  if(!isNaN(anum)&&!isNaN(inum)) return Math.abs(anum-inum)<=0.02*Math.max(1,Math.abs(anum));
+  if(!isNaN(anum)&&!isNaN(inum)) return Math.abs(anum-inum)<=0.05*Math.max(1,Math.abs(anum));
 
   const ansNums = extractNumbers(ans);
   const inNums = extractNumbers(input);
@@ -1373,13 +1373,13 @@ function calcMatch(ans,input){
       let ok=true;
       for(let i=0;i<ansNums.length;i++){
         const a=ansNums[i], b=inNums[i];
-        if(Math.abs(a-b)>0.02*Math.max(1,Math.abs(a))){ ok=false; break; }
+        if(Math.abs(a-b)>0.05*Math.max(1,Math.abs(a))){ ok=false; break; }
       }
       if(ok) return true;
     }
     if(ansNums.length===1){
       const a=ansNums[0];
-      return inNums.some(b=>Math.abs(a-b)<=0.02*Math.max(1,Math.abs(a)));
+      return inNums.some(b=>Math.abs(a-b)<=0.05*Math.max(1,Math.abs(a)));
     }
   }
 
