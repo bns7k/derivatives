@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Derivatives Course Path</title>
+  <title>Derivatives Course</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%92%B0%3C/text%3E%3C/svg%3E">
   <style>
     :root{--bg:#0f1220;--panel:#171a2b;--panel2:#1e2240;--text:#e8ebff;--muted:#9aa3d3;--ok:#4ade80;--warn:#f59e0b;--lock:#64748b;--accent:#7c83ff}
     *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,Arial;background:radial-gradient(circle at top,#1a1f3a 0,#0e1224 45%,#0a0d1a 100%);color:var(--text)}
@@ -75,6 +76,14 @@
     .settings-row label{font-weight:600}
     .settings-row .inline{display:flex;align-items:center;gap:8px}
     .settings-help{font-size:12px;color:var(--muted)}
+    .pomodoro-group{margin-top:12px;padding-top:12px;border-top:1px solid #334089}
+    .pomodoro-grid{display:grid;grid-template-columns:repeat(3,minmax(90px,1fr));gap:8px;margin-top:8px}
+    .pomodoro-grid label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px}
+    .pomodoro-grid input[type="number"]{width:100%;padding:8px;border-radius:8px;border:1px solid #4755ab;background:#101633;color:white}
+    .pomodoro-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+    .pomodoro-status{font-size:13px;color:var(--muted);margin-top:6px}
+    .ultra-timer{font-weight:700;color:#fbbf24}
+    .ultra-mode-badge{font-size:12px;color:#fca5a5;background:#3a1320;border:1px solid #7f1d1d;border-radius:999px;padding:2px 8px}
     .focus-mode .wrap>h1,.focus-mode .wrap>.subtitle,.focus-mode #sidebarCard{display:none}
     .focus-mode .layout{display:flex;justify-content:center;margin-top:0}
     .focus-mode #contentCard{width:min(980px,96vw)}
@@ -99,13 +108,15 @@
     body.light-theme .formula-eq, body.light-theme .theory-calc{background:#edf2ff;border-color:#a9bbff;color:#1e2f74}
     body.light-theme .vchip{background:#e6ecff;border-color:#9cb1ff;color:#1d2e72}
     body.light-theme .popup-card{background:#f6f8ff;border-color:#a2b3ff}
+    body.light-theme .pomodoro-grid input[type="number"]{background:#ffffff;color:#1b2a6d;border-color:#9db0ff}
+    body.light-theme .ultra-mode-badge{background:#fee2e2;color:#991b1b;border-color:#fecaca}
 
     @media (max-width:980px){.layout{grid-template-columns:1fr}.levels{grid-template-columns:repeat(3,1fr)}}
   </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>Course Path</h1>
+  <h1>Derivatives Course</h1>
   <p class="subtitle">This learning path is based on the structure of the Pricing and Forecasting course at BME and the textbook Options, Futures, and Other Derivatives. Learn step by step through structured levels. Each level begins with theory and is followed by practice exercises. The next level unlocks once you successfully complete the current one.</p>
   <div class="layout">
     <div class="card" id="sidebarCard">
@@ -121,6 +132,7 @@
       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
         <h2 id="levelTitle" style="margin:0"></h2>
         <div style="display:flex;gap:8px;align-items:center">
+          <span class="timer" id="pomodoroBadge"></span><span class="ultra-mode-badge" id="ultraBadge" style="display:none">ULTRA SERIOUS MODE</span>
           <button class="btn" id="settingsBtn" style="padding:6px 10px">⚙️ Settings</button>
         </div>
       </div>
@@ -138,6 +150,7 @@
   </div>
 </div>
 <div id="popupHost"></div>
+<div id="pomodoroHost"></div>
 <script>
 const chapterPages = [23,46,71,99,126,154,174,207,222,235,256,276];
 const course = [
@@ -1009,13 +1022,208 @@ let lightTheme = !!settings.lightTheme;
 let autoNextMode = settings.autoNextMode==='auto' ? 'auto' : 'click';
 let autoNextSeconds = Math.min(10, Math.max(1, Number(settings.autoNextSeconds)||3));
 let hideSolvedPractice = !!settings.hideSolvedPractice;
+let ultraSeriousMode = !!settings.ultraSeriousMode;
+let pomodoroMinutes = Math.min(120, Math.max(1, Number(settings.pomodoroMinutes)||25));
+let pomodoroShortBreakMinutes = Math.min(60, Math.max(1, Number(settings.pomodoroShortBreakMinutes)||5));
+let pomodoroLongBreakMinutes = Math.min(90, Math.max(1, Number(settings.pomodoroLongBreakMinutes)||15));
+let pomodoroAutoStartBreaks = !!settings.pomodoroAutoStartBreaks;
+let pomodoroAutoStartPomodoros = !!settings.pomodoroAutoStartPomodoros;
+let pomodoroLongBreakInterval = Math.min(10, Math.max(2, Number(settings.pomodoroLongBreakInterval)||4));
 const QUESTIONS_PER_ROUND = 10;
 const activeQuizzes = {};
+const POMODORO_QUOTES = [
+  '“The only way to do great work is to love what you do.” — Steve Jobs',
+  '“Success is not final, failure is not fatal: it is the courage to continue that counts.” — Winston Churchill',
+  '“Believe you can and you\'re halfway there.” — Theodore Roosevelt',
+  '“It always seems impossible until it’s done.” — Nelson Mandela',
+  '“Do what you can, with what you have, where you are.” — Theodore Roosevelt',
+  '“Dream big and dare to fail.” — Norman Vaughan',
+  '“Act as if what you do makes a difference. It does.” — William James',
+  '“Success usually comes to those who are too busy to be looking for it.” — Henry David Thoreau',
+  '“Don’t watch the clock; do what it does. Keep going.” — Sam Levenson',
+  '“Opportunities don\'t happen. You create them.” — Chris Grosser',
+  '“Hardships often prepare ordinary people for an extraordinary destiny.” — C. S. Lewis',
+  '“Start where you are. Use what you have. Do what you can.” — Arthur Ashe',
+  '“If you can dream it, you can do it.” — Walt Disney',
+  '“The future belongs to those who believe in the beauty of their dreams.” — Eleanor Roosevelt',
+  '“Try not to become a man of success, but rather become a man of value.” — Albert Einstein',
+  '“What we think, we become.” — Buddha',
+  '“Turn your wounds into wisdom.” — Oprah Winfrey',
+  '“Everything you can imagine is real.” — Pablo Picasso',
+  '“Do one thing every day that scares you.” — Eleanor Roosevelt',
+  '“The best way to predict the future is to create it.” — Peter Drucker'
+];
+let pomodoroMode = 'pomodoro';
+let pomodoroRemainingSeconds = pomodoroMinutes * 60;
+let pomodoroCompletedCount = 0;
+let pomodoroRunning = false;
+let pomodoroTimerId = null;
+let pomodoroTickTs = 0;
+let pomodoroQuoteOrder = shuffled(POMODORO_QUOTES.map((_,i)=>i));
+let pomodoroQuoteCursor = 0;
+let ultraRoundActive = false;
+let ultraCorrectCount = 0;
+let ultraQuestionTimerId = null;
+let ultraQuestionRemaining = 0;
 
 function saveSettings(){
   localStorage.setItem('derivatives-settings', JSON.stringify({
-    focusMode, lightTheme, autoNextMode, autoNextSeconds, hideSolvedPractice
+    focusMode,
+    lightTheme,
+    autoNextMode,
+    autoNextSeconds,
+    hideSolvedPractice,
+    pomodoroMinutes,
+    pomodoroShortBreakMinutes,
+    pomodoroLongBreakMinutes,
+    pomodoroAutoStartBreaks,
+    pomodoroAutoStartPomodoros,
+    pomodoroLongBreakInterval,
+    ultraSeriousMode
   }));
+}
+
+function pad2(n){ return String(n).padStart(2,'0'); }
+function formatClock(totalSec){
+  const sec = Math.max(0, Math.floor(totalSec));
+  const m = Math.floor(sec/60);
+  const s = sec%60;
+  return `${pad2(m)}:${pad2(s)}`;
+}
+
+function pomodoroModeLabel(mode){
+  if(mode==='shortBreak') return 'Short Break';
+  if(mode==='longBreak') return 'Long Break';
+  return 'Pomodoro';
+}
+
+function pomodoroModeMinutes(mode){
+  if(mode==='shortBreak') return pomodoroShortBreakMinutes;
+  if(mode==='longBreak') return pomodoroLongBreakMinutes;
+  return pomodoroMinutes;
+}
+
+function resetPomodoro(mode=pomodoroMode){
+  pomodoroMode = mode;
+  pomodoroRemainingSeconds = pomodoroModeMinutes(mode)*60;
+  updatePomodoroUi();
+}
+
+function nextPomodoroQuote(){
+  if(pomodoroQuoteCursor>=pomodoroQuoteOrder.length){
+    pomodoroQuoteOrder = shuffled(POMODORO_QUOTES.map((_,i)=>i));
+    pomodoroQuoteCursor = 0;
+  }
+  const idx = pomodoroQuoteOrder[pomodoroQuoteCursor++];
+  return POMODORO_QUOTES[idx];
+}
+
+function playPomodoroSound(){
+  try{
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if(!Ctx) return;
+    const ctx = new Ctx();
+    const now = ctx.currentTime;
+    [0,0.22,0.44].forEach((offset, i)=>{
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type='sine';
+      osc.frequency.value = i===1 ? 1046.5 : 880;
+      gain.gain.setValueAtTime(0.0001, now+offset);
+      gain.gain.exponentialRampToValueAtTime(0.18, now+offset+0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now+offset+0.18);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now+offset);
+      osc.stop(now+offset+0.2);
+    });
+    setTimeout(()=>ctx.close(), 1200);
+  }catch{}
+}
+
+function closePomodoroPopup(){
+  const host=document.getElementById('pomodoroHost');
+  if(host) host.innerHTML='';
+}
+
+function showPomodoroPopup(quote, nextMode, autoStart){
+  const host=document.getElementById('pomodoroHost');
+  if(!host) return;
+  host.innerHTML=`<div class="popup-overlay"><div class="popup-card">
+    <h3 class="popup-title">⏰ Session completed</h3>
+    <p><strong>Next:</strong> ${pomodoroModeLabel(nextMode)} (${pomodoroModeMinutes(nextMode)} min)</p>
+    <div class="popup-hint">${quote}</div>
+    <div class="popup-actions">
+      <button class="btn" id="pomodoroPopupStart">${autoStart?'Running…':'Start next session'}</button>
+      <button class="btn" id="pomodoroPopupClose">Close</button>
+    </div>
+  </div></div>`;
+  document.getElementById('pomodoroPopupStart').onclick=()=>{
+    if(!pomodoroRunning) startPomodoro();
+    closePomodoroPopup();
+  };
+  document.getElementById('pomodoroPopupClose').onclick=closePomodoroPopup;
+}
+
+function updatePomodoroUi(){
+  const badge=document.getElementById('pomodoroBadge');
+  if(badge) badge.textContent=`⏰ ${pomodoroModeLabel(pomodoroMode)} ${formatClock(pomodoroRemainingSeconds)}${pomodoroRunning?' ▶':''}`;
+  const status=document.getElementById('pomodoroStatus');
+  if(status) status.textContent=`${pomodoroModeLabel(pomodoroMode)} • ${formatClock(pomodoroRemainingSeconds)} • Completed pomodoros: ${pomodoroCompletedCount}`;
+  const startPause=document.getElementById('pomodoroStartPause');
+  if(startPause) startPause.textContent = pomodoroRunning ? 'Pause' : 'Start';
+}
+
+function stopPomodoro(){
+  pomodoroRunning=false;
+  if(pomodoroTimerId){ clearInterval(pomodoroTimerId); pomodoroTimerId=null; }
+  updatePomodoroUi();
+}
+
+function onPomodoroFinished(){
+  playPomodoroSound();
+  const justFinishedMode = pomodoroMode;
+  if(justFinishedMode==='pomodoro'){
+    pomodoroCompletedCount += 1;
+    const longNext = pomodoroCompletedCount % pomodoroLongBreakInterval === 0;
+    pomodoroMode = longNext ? 'longBreak' : 'shortBreak';
+  }else{
+    pomodoroMode = 'pomodoro';
+  }
+  pomodoroRemainingSeconds = pomodoroModeMinutes(pomodoroMode) * 60;
+  const autoStart = justFinishedMode==='pomodoro' ? pomodoroAutoStartBreaks : pomodoroAutoStartPomodoros;
+  const quote = nextPomodoroQuote();
+  showPomodoroPopup(quote, pomodoroMode, autoStart);
+  if(autoStart){
+    pomodoroRunning = true;
+    pomodoroTickTs = Date.now();
+  } else {
+    stopPomodoro();
+  }
+  updatePomodoroUi();
+}
+
+function startPomodoro(){
+  if(pomodoroRunning) return;
+  if(pomodoroRemainingSeconds<=0) pomodoroRemainingSeconds = pomodoroModeMinutes(pomodoroMode) * 60;
+  pomodoroRunning=true;
+  pomodoroTickTs = Date.now();
+  if(pomodoroTimerId) clearInterval(pomodoroTimerId);
+  pomodoroTimerId = setInterval(()=>{
+    if(!pomodoroRunning) return;
+    const now = Date.now();
+    const delta = Math.floor((now - pomodoroTickTs) / 1000);
+    if(delta<=0) return;
+    pomodoroTickTs = now;
+    pomodoroRemainingSeconds -= delta;
+    if(pomodoroRemainingSeconds<=0){
+      pomodoroRemainingSeconds = 0;
+      onPomodoroFinished();
+      return;
+    }
+    updatePomodoroUi();
+  },250);
+  updatePomodoroUi();
 }
 
 function shuffled(arr){
@@ -1115,12 +1323,30 @@ function showSettingsMenu(){
     <h3 class="popup-title">⚙️ Settings</h3>
     <div class="settings-row"><label for="setTheme">Theme</label><div class="inline"><input id="setTheme" type="checkbox" ${lightTheme?'checked':''}/><span>Light mode</span></div></div>
     <div class="settings-row"><label for="setFocus">Focus Mode</label><div class="inline"><input id="setFocus" type="checkbox" ${focusMode?'checked':''}/><span>Hide sidebar and top intro</span></div></div>
+    <div class="settings-row"><label for="setUltra">ULTRA SERIOUS MODE</label><div class="inline"><input id="setUltra" type="checkbox" ${ultraSeriousMode?'checked':''}/><span>Timed locked practice</span></div></div>
     <div class="settings-row"><label>Auto next (correct answer)</label><div class="inline"><label><input type="radio" name="nextMode" value="click" ${autoNextMode==='click'?'checked':''}/> Click only</label><label><input type="radio" name="nextMode" value="auto" ${autoNextMode==='auto'?'checked':''}/> Auto</label></div></div>
     <div class="settings-row"><label for="setDelay">Auto delay</label><div class="inline"><input id="setDelay" type="range" min="1" max="10" value="${autoNextSeconds}" ${autoNextMode==='click'?'disabled':''}/><span id="setDelayVal">${autoNextSeconds}s</span></div></div>
     <div class="settings-help">Set how many seconds to wait before jumping to the next question when auto mode is enabled.</div>
     <div class="settings-row"><label for="setHideSolved">Practice: hide solved questions</label><div class="inline"><input id="setHideSolved" type="checkbox" ${hideSolvedPractice?'checked':''}/><span>Skip solved and prevent going back to them</span></div></div>
     <div class="settings-row"><label>Instructor unlock</label><div class="inline"><button class="btn" id="openUnlockFromSettings">Unlock now</button></div></div>
     <div class="settings-row"><label>Review memory</label><div class="inline"><button class="btn" id="resetMemoryBtn">Reset results</button></div></div>
+    <div class="pomodoro-group">
+      <h4 style="margin:0">⏱️ Built-in Pomodoro</h4>
+      <div class="pomodoro-grid">
+        <div><label for="setPomodoro">Pomodoro (min)</label><input id="setPomodoro" type="number" min="1" max="120" value="${pomodoroMinutes}"/></div>
+        <div><label for="setPomodoroShort">Short break</label><input id="setPomodoroShort" type="number" min="1" max="60" value="${pomodoroShortBreakMinutes}"/></div>
+        <div><label for="setPomodoroLong">Long break</label><input id="setPomodoroLong" type="number" min="1" max="90" value="${pomodoroLongBreakMinutes}"/></div>
+      </div>
+      <div class="settings-row"><label for="setAutoBreaks">Auto start breaks</label><div class="inline"><input id="setAutoBreaks" type="checkbox" ${pomodoroAutoStartBreaks?'checked':''}/></div></div>
+      <div class="settings-row"><label for="setAutoPomodoros">Auto start pomodoros</label><div class="inline"><input id="setAutoPomodoros" type="checkbox" ${pomodoroAutoStartPomodoros?'checked':''}/></div></div>
+      <div class="settings-row"><label for="setLongInterval">Long break interval</label><div class="inline"><input id="setLongInterval" type="number" min="2" max="10" value="${pomodoroLongBreakInterval}" style="width:80px"/></div></div>
+      <div class="pomodoro-status" id="pomodoroStatus"></div>
+      <div class="pomodoro-actions">
+        <button class="btn" id="pomodoroStartPause">${pomodoroRunning?'Pause':'Start'}</button>
+        <button class="btn" id="pomodoroReset">Reset current</button>
+        <button class="btn" id="pomodoroSkip">Skip session</button>
+      </div>
+    </div>
     <div class="feedback" id="settingsFb"></div>
     <div class="popup-actions">
       <button class="btn" id="settingsClose">Close</button>
@@ -1136,7 +1362,8 @@ function showSettingsMenu(){
   };
 
   document.getElementById('setTheme').onchange=(e)=>{ lightTheme=e.target.checked; applyTheme(); saveSettings(); };
-  document.getElementById('setFocus').onchange=(e)=>{ focusMode=e.target.checked; applyFocusMode(); saveSettings(); };
+  document.getElementById('setFocus').onchange=(e)=>{ focusMode=e.target.checked; if(ultraSeriousMode && !focusMode) focusMode=true; applyFocusMode(); saveSettings(); };
+  document.getElementById('setUltra').onchange=(e)=>{ setUltraSeriousMode(e.target.checked); if(e.target.checked){ close(); } };
   document.querySelectorAll('input[name="nextMode"]').forEach(r=>r.onchange=()=>{
     autoNextMode=document.querySelector('input[name="nextMode"]:checked')?.value||'click';
     refreshDelayUi();
@@ -1153,6 +1380,47 @@ function showSettingsMenu(){
     renderPractice();
     saveSettings();
   };
+  const sanitizeMinutes = (v,min,max,fallback)=>Math.min(max, Math.max(min, Number(v)||fallback));
+  document.getElementById('setPomodoro').onchange=(e)=>{
+    pomodoroMinutes = sanitizeMinutes(e.target.value,1,120,pomodoroMinutes);
+    e.target.value = pomodoroMinutes;
+    if(pomodoroMode==='pomodoro' && !pomodoroRunning) resetPomodoro('pomodoro');
+    saveSettings();
+  };
+  document.getElementById('setPomodoroShort').onchange=(e)=>{
+    pomodoroShortBreakMinutes = sanitizeMinutes(e.target.value,1,60,pomodoroShortBreakMinutes);
+    e.target.value = pomodoroShortBreakMinutes;
+    if(pomodoroMode==='shortBreak' && !pomodoroRunning) resetPomodoro('shortBreak');
+    saveSettings();
+  };
+  document.getElementById('setPomodoroLong').onchange=(e)=>{
+    pomodoroLongBreakMinutes = sanitizeMinutes(e.target.value,1,90,pomodoroLongBreakMinutes);
+    e.target.value = pomodoroLongBreakMinutes;
+    if(pomodoroMode==='longBreak' && !pomodoroRunning) resetPomodoro('longBreak');
+    saveSettings();
+  };
+  document.getElementById('setLongInterval').onchange=(e)=>{
+    pomodoroLongBreakInterval = sanitizeMinutes(e.target.value,2,10,pomodoroLongBreakInterval);
+    e.target.value = pomodoroLongBreakInterval;
+    saveSettings();
+  };
+  document.getElementById('setAutoBreaks').onchange=(e)=>{ pomodoroAutoStartBreaks = e.target.checked; saveSettings(); };
+  document.getElementById('setAutoPomodoros').onchange=(e)=>{ pomodoroAutoStartPomodoros = e.target.checked; saveSettings(); };
+  document.getElementById('pomodoroStartPause').onclick=()=>{
+    if(pomodoroRunning) stopPomodoro();
+    else startPomodoro();
+    document.getElementById('pomodoroStartPause').textContent = pomodoroRunning ? 'Pause' : 'Start';
+  };
+  document.getElementById('pomodoroReset').onclick=()=>{
+    stopPomodoro();
+    resetPomodoro(pomodoroMode);
+    document.getElementById('pomodoroStartPause').textContent='Start';
+  };
+  document.getElementById('pomodoroSkip').onclick=()=>{
+    stopPomodoro();
+    onPomodoroFinished();
+    document.getElementById('pomodoroStartPause').textContent = pomodoroRunning ? 'Pause' : 'Start';
+  };
 
   document.getElementById('resetMemoryBtn').onclick=()=>{
     Object.keys(answerMemory).forEach(k=>delete answerMemory[k]);
@@ -1164,6 +1432,7 @@ function showSettingsMenu(){
   document.getElementById('openUnlockFromSettings').onclick=()=>{ close(); showUnlockPasswordPrompt(); };
   document.getElementById('settingsClose').onclick=close;
   refreshDelayUi();
+  updatePomodoroUi();
 }
 
 function showUnlockPasswordPrompt(){
@@ -1180,6 +1449,48 @@ function showUnlockPasswordPrompt(){
   document.getElementById('unlockClose').onclick=()=>{host.innerHTML='';};
 }
 
+function clearUltraQuestionTimer(){
+  if(ultraQuestionTimerId){ clearInterval(ultraQuestionTimerId); ultraQuestionTimerId=null; }
+}
+
+function updateUltraBadge(){
+  const b=document.getElementById('ultraBadge');
+  if(!b) return;
+  b.style.display = ultraSeriousMode ? 'inline-block' : 'none';
+}
+
+function applyUltraSeriousModeState(){
+  updateUltraBadge();
+  if(ultraSeriousMode){
+    focusMode = true;
+    applyFocusMode();
+  }
+}
+
+function startUltraRound(forceNew=true){
+  ultraRoundActive = true;
+  ultraCorrectCount = 0;
+  qIndex = 0;
+  if(forceNew) ensureQuizSet(selectedLevel, true);
+}
+
+function setUltraSeriousMode(enabled){
+  ultraSeriousMode = !!enabled;
+  if(ultraSeriousMode){
+    focusMode = true;
+    selectedLevel = Math.min(state.current, course.length-1);
+    currentTab = 'practice';
+    startUltraRound(true);
+  } else {
+    ultraRoundActive = false;
+    clearUltraQuestionTimer();
+  }
+  applyUltraSeriousModeState();
+  saveSettings();
+  renderLevels();
+  renderContent();
+}
+
 function renderLevels(){
   const box=document.getElementById('levels'); box.innerHTML='';
   box.style.display = levelsCollapsed ? 'none' : 'grid';
@@ -1190,15 +1501,22 @@ function renderLevels(){
     const d=document.createElement('div');
     d.className='level '+(state.completed.includes(i)?'completed ':i===state.current?'current ':'')+(!isUnlocked(i)?'locked':'');
     d.innerHTML=`<div class="name">Level ${i+1} — ${c.title}</div><div class="status">${state.completed.includes(i)?'Completed':i===state.current?'Current':'Locked'}</div>`;
-    d.onclick=()=>{if(isUnlocked(i)){selectedLevel=i;qIndex=0;ensureQuizSet(selectedLevel);renderContent();renderLevels();}};
+    d.onclick=()=>{if(ultraSeriousMode && ultraRoundActive){pop('ULTRA SERIOUS MODE: level switch is locked during the round.');return;} if(isUnlocked(i)){selectedLevel=i;qIndex=0;ensureQuizSet(selectedLevel);renderContent();renderLevels();}};
     box.appendChild(d);
   });
   progressEl.textContent = `Completed levels: ${state.completed.length}/${course.length}`;
 }
 function renderContent(){
+  if(ultraSeriousMode && ultraRoundActive) currentTab='practice';
   const lvl=course[selectedLevel];
   document.getElementById('levelTitle').textContent=`Level ${selectedLevel+1} — ${lvl.title}`;
-  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===currentTab));
+  document.querySelectorAll('.tab').forEach(b=>{
+    b.classList.toggle('active',b.dataset.tab===currentTab);
+    const locked = ultraSeriousMode && ultraRoundActive && b.dataset.tab!=='practice';
+    b.disabled = locked;
+    b.style.opacity = locked ? '0.55' : '1';
+    b.style.cursor = locked ? 'not-allowed' : 'pointer';
+  });
   const th=document.getElementById('theoryPane');
   const calc=document.getElementById('calculationPane');
   const pr=document.getElementById('practicePane');
@@ -1394,9 +1712,123 @@ function renderMostImportantCalculation(){
   });
 }
 function renderPractice(){
+  clearUltraQuestionTimer();
+  const pane=document.getElementById('practicePane');
+
+  if(ultraSeriousMode){
+    if(!ultraRoundActive) startUltraRound(true);
+    const quizSet=ensureQuizSet(selectedLevel);
+    const total=quizSet.length;
+    if(qIndex>=total){ qIndex=0; }
+    const actualIdx=qIndex;
+    const q=quizSet[actualIdx];
+    const done=ultraCorrectCount;
+    const timeLimit = q.type==='mcq' ? 10 : 30;
+
+    pane.innerHTML=`<div class="qcard">
+      <div class="qmeta"><span>ULTRA • Question ${qIndex+1}/${total}</span><span>Correct: ${done}/${total} • <span id="ultraTimer" class="ultra-timer">${timeLimit}s</span></span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin:6px 0 8px"><div>${q.q}</div></div>
+      <div id="answerArea"></div>
+      <div class="settings-help" style="margin-top:8px">No back/forward, no retry. One attempt per question.</div>
+      <div class="feedback" id="fb"></div>
+    </div>`;
+
+    const timerEl=document.getElementById('ultraTimer');
+    let answered=false;
+    ultraQuestionRemaining=timeLimit;
+    const advanceUltra=(ok, timedOut=false)=>{
+      if(answered) return;
+      answered=true;
+      clearUltraQuestionTimer();
+      if(ok){
+        ultraCorrectCount += 1;
+        results[selectedLevel][actualIdx]=true;
+        recordAnswer(q, selectedLevel, actualIdx, true);
+      }else{
+        recordAnswer(q, selectedLevel, actualIdx, false);
+      }
+      const fb=document.getElementById('fb');
+      if(fb){
+        fb.textContent = ok ? '✅ Correct!' : (timedOut ? '⏱️ Time is up.' : '❌ Wrong.');
+        fb.className = ok ? 'feedback good' : 'feedback bad';
+      }
+      setTimeout(()=>{
+        qIndex += 1;
+        if(qIndex>=total){
+          if(ultraCorrectCount===total){
+            ultraRoundActive=false;
+            if(!state.completed.includes(selectedLevel)) state.completed.push(selectedLevel);
+            if(state.current===selectedLevel && selectedLevel<course.length-1) state.current++;
+            save();
+            renderLevels();
+            if(selectedLevel<course.length-1){
+              selectedLevel += 1;
+              ensureQuizSet(selectedLevel);
+              currentTab='theory';
+              pop('🔥 ULTRA cleared: 10/10! Next level unlocked.');
+            } else {
+              pop('🔥 ULTRA cleared: 10/10! Course fully completed.');
+            }
+            renderContent();
+            return;
+          }
+          pop(`💀 ULTRA round failed (${ultraCorrectCount}/${total}). New random set starts now.`);
+          startUltraRound(true);
+          renderPractice();
+          return;
+        }
+        renderPractice();
+      }, 300);
+    };
+
+    ultraQuestionTimerId=setInterval(()=>{
+      ultraQuestionRemaining -= 1;
+      if(timerEl) timerEl.textContent = `${Math.max(0, ultraQuestionRemaining)}s`;
+      if(ultraQuestionRemaining<=0) advanceUltra(false, true);
+    },1000);
+
+    const a=document.getElementById('answerArea');
+    if(q.type==='mcq'){
+      let selectedChoice='';
+      a.innerHTML=q.options.map((opt,i)=>`<label class="opt" data-opt="${i}"><input type="radio" name="opt" value="${opt}"/> ${String.fromCharCode(65+i)}) ${opt}<span class="keycap">${i+1}</span></label>`).join('');
+      const optionsEls=[...a.querySelectorAll('.opt')];
+      optionsEls.forEach(el=>{
+        el.onclick=()=>{
+          if(answered) return;
+          optionsEls.forEach(x=>x.classList.remove('selected'));
+          el.classList.add('selected');
+          selectedChoice=el.querySelector('input').value;
+          advanceUltra(normalize(selectedChoice)===normalize(q.a), false);
+        };
+      });
+      window.onkeydown=(e)=>{
+        if(answered) return;
+        const n=Number(e.key);
+        if(n>=1 && n<=q.options.length){
+          selectedChoice=q.options[n-1];
+          optionsEls.forEach(x=>x.classList.remove('selected'));
+          if(optionsEls[n-1]) optionsEls[n-1].classList.add('selected');
+          advanceUltra(normalize(selectedChoice)===normalize(q.a), false);
+        }
+      };
+    } else {
+      a.innerHTML=`<input id="calcInput" type="text" value="=" placeholder="Type like Excel: =100-200, then press Enter"/>`;
+      const input=document.getElementById('calcInput');
+      setTimeout(()=>{ input.focus(); input.setSelectionRange(input.value.length, input.value.length); },0);
+      const submit=()=>{
+        if(answered) return;
+        const parsed=evaluateExcelLike(input.value);
+        const candidate = Number.isNaN(parsed) ? input.value : String(parsed);
+        advanceUltra(calcMatch(q.a,candidate), false);
+      };
+      input.addEventListener('keydown',(e)=>{ if(e.key==='Enter') submit(); });
+      window.onkeydown=(e)=>{ if(e.key==='Enter') submit(); };
+    }
+    return;
+  }
+
   const quizSet=ensureQuizSet(selectedLevel);
   const practiceIndexes=getPracticeIndexes(selectedLevel);
-  const pane=document.getElementById('practicePane');
 
   if(!practiceIndexes.length){
     const total=quizSet.length;
@@ -1488,10 +1920,10 @@ function renderPractice(){
       }
     };
   } else {
-    a.innerHTML=`<input id="calcInput" type="text" placeholder="Type like Excel: =100-200, then press Enter" ${alreadySolved?'readonly':''}/>`;
+    a.innerHTML=`<input id="calcInput" type="text" value="=" placeholder="Type like Excel: =100-200, then press Enter" ${alreadySolved?'readonly':''}/>`;
     const input=document.getElementById('calcInput');
     if(!alreadySolved){
-      setTimeout(()=>{ input.focus(); input.select(); },0);
+      setTimeout(()=>{ input.focus(); input.setSelectionRange(input.value.length, input.value.length); },0);
     }
     const submit=()=>{
       if(results[selectedLevel][actualIdx]) return;
@@ -1578,10 +2010,10 @@ function tryCompleteLevel(){
   }
 }
 function pop(msg){const d=document.createElement('div');d.className='unlock-pop';d.textContent=msg;document.body.appendChild(d);setTimeout(()=>d.remove(),1400)}
-document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{currentTab=b.dataset.tab;renderContent();});
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{ if(ultraSeriousMode && ultraRoundActive && b.dataset.tab!=='practice'){ pop('ULTRA SERIOUS MODE: finish the current round first.'); return; } currentTab=b.dataset.tab; if(ultraSeriousMode && currentTab==='practice' && !ultraRoundActive) startUltraRound(true); renderContent();});
 document.getElementById('toggleLevels').onclick=()=>{levelsCollapsed=!levelsCollapsed;renderLevels();};
 document.getElementById('settingsBtn').onclick=showSettingsMenu;
-renderLevels();ensureQuizSet(selectedLevel);renderContent();applyFocusMode();applyTheme();saveSettings();
+renderLevels();ensureQuizSet(selectedLevel);applyUltraSeriousModeState();renderContent();applyFocusMode();applyTheme();updatePomodoroUi();saveSettings();
 </script>
 </body>
 </html>
