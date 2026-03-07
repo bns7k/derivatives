@@ -21,7 +21,7 @@ From repo root:
 3. From `android-app/`:
 
 ```bash
-./gradlew assembleDebug
+gradle assembleDebug
 ```
 
 The Android build runs `syncWebAssets` automatically before `preBuild`, so `index.html` and `options.pdf` are copied from the repo root.
