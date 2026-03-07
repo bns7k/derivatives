@@ -1596,15 +1596,17 @@ function nextQuestion(){
   renderPractice();
 }
 
-function showResultPopup({ok,hint,onConfirm}){
+function showResultPopup({ok,hint,onConfirm,userAnswer,correctAnswer}){
   const host=document.getElementById('popupHost');
   const forceContinue = !ok;
   const autoEnabled = forceContinue || autoNextMode==='auto';
   const secsStart = forceContinue ? 4 : autoNextSeconds;
   let secs = secsStart;
+  const hasComparison = userAnswer!==undefined || correctAnswer!==undefined;
   host.innerHTML=`<div class="popup-overlay"><div class="popup-card">
     <h3 class="popup-title">${ok?'✅ Correct answer!':'❌ Wrong answer'}</h3>
     <div>${ok?'Continue to next question?':'Incorrect answer recorded. Moving to next question.'}</div>
+    ${hasComparison?`<div class="popup-hint">🧮 Your result: <strong>${userAnswer??'-'}</strong><br/>✅ Correct result: <strong>${correctAnswer??'-'}</strong></div>`:''}
     ${ok?'':`<div class="popup-hint">💡 Hint: ${hint||'No hint available.'}</div>`}
     <div class="timer">${autoEnabled?`Auto continue in <strong id="popupTimer">${secs}</strong>s`:'Auto-continue is disabled (click to continue).'}</div>
     <div class="popup-actions">
@@ -1949,7 +1951,7 @@ function renderPractice(){
     fb.textContent = ok ? '✅ Correct!' : '❌ Wrong answer recorded.';
     fb.className = ok ? 'feedback good' : 'feedback bad';
     if(!ok) document.getElementById('hint').classList.add('show');
-    showResultPopup({ok,hint:q.hint,onConfirm:()=>{ nextQuestion(); }});
+    showResultPopup({ok,hint:q.hint,userAnswer:value,correctAnswer:q.a,onConfirm:()=>{ nextQuestion(); }});
   };
 
   const a=document.getElementById('answerArea');
