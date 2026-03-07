@@ -36,3 +36,11 @@ android-app/app/build/outputs/apk/debug/app-debug.apk
 
 - This app intentionally wraps the **same** SPA and preserves all existing features.
 - `localStorage`-based progress/settings/review memory remain available inside the Android WebView.
+
+## Build in GitHub (no local SDK needed)
+
+A workflow is included at `.github/workflows/android-apk.yml`.
+
+- Go to **Actions → Build Android APK → Run workflow**.
+- Download artifact: `derivatives-course-debug-apk`.
+
