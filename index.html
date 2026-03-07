@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Derivatives Course Path</title>
+  <title>Derivatives Course</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%92%B0%3C/text%3E%3C/svg%3E">
   <style>
     :root{--bg:#0f1220;--panel:#171a2b;--panel2:#1e2240;--text:#e8ebff;--muted:#9aa3d3;--ok:#4ade80;--warn:#f59e0b;--lock:#64748b;--accent:#7c83ff}
     *{box-sizing:border-box} body{margin:0;font-family:Inter,system-ui,Arial;background:radial-gradient(circle at top,#1a1f3a 0,#0e1224 45%,#0a0d1a 100%);color:var(--text)}
@@ -75,6 +76,14 @@
     .settings-row label{font-weight:600}
     .settings-row .inline{display:flex;align-items:center;gap:8px}
     .settings-help{font-size:12px;color:var(--muted)}
+    .pomodoro-group{margin-top:12px;padding-top:12px;border-top:1px solid #334089}
+    .pomodoro-grid{display:grid;grid-template-columns:repeat(3,minmax(90px,1fr));gap:8px;margin-top:8px}
+    .pomodoro-grid label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px}
+    .pomodoro-grid input[type="number"]{width:100%;padding:8px;border-radius:8px;border:1px solid #4755ab;background:#101633;color:white}
+    .pomodoro-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+    .pomodoro-status{font-size:13px;color:var(--muted);margin-top:6px}
+    .ultra-timer{font-weight:700;color:#fbbf24}
+    .ultra-mode-badge{font-size:12px;color:#fca5a5;background:#3a1320;border:1px solid #7f1d1d;border-radius:999px;padding:2px 8px}
     .focus-mode .wrap>h1,.focus-mode .wrap>.subtitle,.focus-mode #sidebarCard{display:none}
     .focus-mode .layout{display:flex;justify-content:center;margin-top:0}
     .focus-mode #contentCard{width:min(980px,96vw)}
@@ -99,13 +108,15 @@
     body.light-theme .formula-eq, body.light-theme .theory-calc{background:#edf2ff;border-color:#a9bbff;color:#1e2f74}
     body.light-theme .vchip{background:#e6ecff;border-color:#9cb1ff;color:#1d2e72}
     body.light-theme .popup-card{background:#f6f8ff;border-color:#a2b3ff}
+    body.light-theme .pomodoro-grid input[type="number"]{background:#ffffff;color:#1b2a6d;border-color:#9db0ff}
+    body.light-theme .ultra-mode-badge{background:#fee2e2;color:#991b1b;border-color:#fecaca}
 
     @media (max-width:980px){.layout{grid-template-columns:1fr}.levels{grid-template-columns:repeat(3,1fr)}}
   </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>Course Path</h1>
+  <h1>Derivatives Course</h1>
   <p class="subtitle">This learning path is based on the structure of the Pricing and Forecasting course at BME and the textbook Options, Futures, and Other Derivatives. Learn step by step through structured levels. Each level begins with theory and is followed by practice exercises. The next level unlocks once you successfully complete the current one.</p>
   <div class="layout">
     <div class="card" id="sidebarCard">
@@ -121,6 +132,7 @@
       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
         <h2 id="levelTitle" style="margin:0"></h2>
         <div style="display:flex;gap:8px;align-items:center">
+          <span class="timer" id="pomodoroBadge"></span><span class="ultra-mode-badge" id="ultraBadge" style="display:none">ULTRA SERIOUS MODE</span>
           <button class="btn" id="settingsBtn" style="padding:6px 10px">⚙️ Settings</button>
         </div>
       </div>
@@ -138,6 +150,7 @@
   </div>
 </div>
 <div id="popupHost"></div>
+<div id="pomodoroHost"></div>
 <script>
 const chapterPages = [23,46,71,99,126,154,174,207,222,235,256,276];
 const course = [
@@ -176,9 +189,9 @@ const course = [
 ]},
 {title:'Hedging Strategies Using Futures',summary:['Long hedge protects future purchase; short hedge protects future sale.','Basis = Spot - Futures; changing basis creates basis risk.','Cross hedge uses related but not identical futures.','Optimal hedge ratio uses correlation and relative volatilities.','Index futures hedge portfolio market beta exposure.'],quiz:[
 {type:'mcq',q:'When should a company use a long hedge?',options:['Owns asset to sell later','Will buy asset later and fears price increase','Speculate on crash','Increase rate exposure'],a:'Will buy asset later and fears price increase',hint:'Long futures = commitment to buy.'},
-{type:'calc',q:'Hedge 100000 barrels, futures size 1000. Number and side?',a:'100 short',hint:'Selling asset later -> short futures.'},
+{type:'calc',q:'Hedge 100000 barrels with futures size 1000. Number of contracts needed?',a:'100',hint:'Contracts = exposure / contract size.'},
 {type:'mcq',q:'Basis definition?',options:['Futures - Spot','Spot - Futures','Strike - Spot','Initial - Maintenance'],a:'Spot - Futures',hint:'S minus F.'},
-{type:'calc',q:'Basis from +2 to +1. What happened?',a:'weakened',hint:'A decrease in basis is weakening.'},
+{type:'calc',q:'Basis from +2 to +1. Compute basis change (new-old).',a:'-1',hint:'Basis change = 1 - 2.'},
 {type:'mcq',q:'Cross hedging means...',options:['Two exchanges at once','Hedge using related but different asset futures','Two currencies','Use options and futures'],a:'Hedge using related but different asset futures',hint:'No exact contract available.'},
 {type:'calc',q:'rho=0.75, sigma_s=0.60, sigma_f=0.90. Optimal hedge ratio?',a:'0.5',hint:'h*=rho*(sigma_s/sigma_f)'},
 {type:'mcq',q:'Selling index futures against beta=1.2 portfolio aims to...',options:['Remove unsystematic risk','Reduce systematic market risk','Increase profit potential','Raise beta to 2'],a:'Reduce systematic market risk',hint:'Beta measures market sensitivity.'},
@@ -237,7 +250,7 @@ const course = [
 {type:'mcq',q:'Which ABS tranche absorbs losses first?',options:['Senior','Mezzanine','Equity','AAA'],a:'Equity',hint:'Bottom tranche takes first hit.'},
 {type:'mcq',q:'SPV is...',options:['Armored truck','Legal entity holding assets and issuing securities','Central bank office','Mortgage insurance policy'],a:'Legal entity holding assets and issuing securities',hint:'Ring-fenced entity.'},
 {type:'mcq',q:'Why did senior CDO tranches fail?',options:['Rates went to zero','Defaults were highly correlated','Gov stopped printing','Fees unpaid'],a:'Defaults were highly correlated',hint:'Diversification assumption broke.'},
-{type:'calc',q:'Portfolio 100m. Equity tranche 5%. Loss 3m. Which tranche hit and by how much?',a:'equity 3000000',hint:'Losses flow bottom-up.'},
+{type:'calc',q:'Portfolio 100m. Equity tranche 5%. Loss 3m. Amount absorbed by equity tranche?',a:'3000000',hint:'Equity notional is 5m, so full 3m loss fits in equity.'},
 {type:'mcq',q:'Subprime mortgage is...',options:['High down-payment loan','Loan to lower-credit borrower','0% gov loan','Second-home loan'],a:'Loan to lower-credit borrower',hint:'Below prime credit quality.'},
 {type:'calc',q:'Portfolio 200m, equity 10m. Total loss 25m. Mezzanine loss?',a:'15000000',hint:'After equity wiped out, remainder hits mezz.'},
 {type:'mcq',q:'Teaser rate means...',options:['High initial rate','Low intro rate then resets higher','Broker prize','Savings account rate'],a:'Low intro rate then resets higher',hint:'Initially attractive, later expensive.'},
@@ -260,7 +273,7 @@ const course = [
 {type:'mcq',q:'American vs European option difference?',options:['Only US trading','European exercisable anytime','American exercisable anytime until expiry; European only at expiry','European always cheaper'],a:'American exercisable anytime until expiry; European only at expiry',hint:'Exercise flexibility differs.'},
 {type:'calc',q:'Buy call K=50 for 3. Stock at expiry 55. Net profit?',a:'2',hint:'(55-50)-3'},
 {type:'mcq',q:'Writing an option means...',options:['Buying option','Selling option','Registering company','Hedging with futures'],a:'Selling option',hint:'Writer is short option.'},
-{type:'calc',q:'2-for-1 split: one call contract, K=100 on 100 shares. New terms?',a:'2 contracts 50',hint:'Strike halves, quantity doubles.'},
+{type:'calc',q:'2-for-1 split: call strike K=100. New strike after adjustment?',a:'50',hint:'For 2-for-1 split, strike halves.'},
 {type:'mcq',q:'Option is ITM when...',options:['Strike = stock','Premium high','Immediate exercise gives positive payoff','Expiry far away'],a:'Immediate exercise gives positive payoff',hint:'ITM has intrinsic value.'},
 {type:'calc',q:'Buy put K=30 for 2. Break-even stock price?',a:'28',hint:'K - premium.'},
 {type:'mcq',q:'Put intrinsic value is...',options:['max(0,S-K)','max(0,K-S)','Always premium','Time remaining'],a:'max(0,K-S)',hint:'Put gains when strike exceeds spot.'},
@@ -286,7 +299,7 @@ const course = [
 {type:'mcq',q:'Best when expecting very large move but unknown direction?',options:['Bull spread','Butterfly','Long straddle','Covered call'],a:'Long straddle',hint:'Buy call + put same strike.'},
 {type:'calc',q:'Bull call spread: buy K50 call for4, sell K60 call for1. Max profit?',a:'7',hint:'(60-50)-(4-1)'},
 {type:'mcq',q:'Butterfly spread view?',options:['Skyrocket','Crash','Stay near middle strike','Volatility surge'],a:'Stay near middle strike',hint:'Neutral range strategy.'},
-{type:'calc',q:'Straddle K100 total premium 8. Break-even prices?',a:'92 108',hint:'K±premium'},
+{type:'calc',q:'Straddle K100 total premium 8. Lower break-even price?',a:'92',hint:'Lower BE = K - premium.'},
 {type:'mcq',q:'Strangle differs from straddle because...',options:['Only puts','Different strikes, usually cheaper','Only American options','Unlimited both unlike straddle'],a:'Different strikes, usually cheaper',hint:'OTM options reduce cost.'},
 {type:'calc',q:'Bear put spread buy K70 put for5 sell K60 put for2. Max loss?',a:'3',hint:'Net premium paid.'},
 {type:'mcq',q:'A strap is...',options:['Straddle with two calls + one put','Bull spread with puts','Four-strike strategy','Sell options to buy stock'],a:'Straddle with two calls + one put',hint:'Upside-biased volatility bet.'},
@@ -1009,13 +1022,208 @@ let lightTheme = !!settings.lightTheme;
 let autoNextMode = settings.autoNextMode==='auto' ? 'auto' : 'click';
 let autoNextSeconds = Math.min(10, Math.max(1, Number(settings.autoNextSeconds)||3));
 let hideSolvedPractice = !!settings.hideSolvedPractice;
+let ultraSeriousMode = !!settings.ultraSeriousMode;
+let pomodoroMinutes = Math.min(120, Math.max(1, Number(settings.pomodoroMinutes)||25));
+let pomodoroShortBreakMinutes = Math.min(60, Math.max(1, Number(settings.pomodoroShortBreakMinutes)||5));
+let pomodoroLongBreakMinutes = Math.min(90, Math.max(1, Number(settings.pomodoroLongBreakMinutes)||15));
+let pomodoroAutoStartBreaks = !!settings.pomodoroAutoStartBreaks;
+let pomodoroAutoStartPomodoros = !!settings.pomodoroAutoStartPomodoros;
+let pomodoroLongBreakInterval = Math.min(10, Math.max(2, Number(settings.pomodoroLongBreakInterval)||4));
 const QUESTIONS_PER_ROUND = 10;
 const activeQuizzes = {};
+const POMODORO_QUOTES = [
+  '“The only way to do great work is to love what you do.” — Steve Jobs',
+  '“Success is not final, failure is not fatal: it is the courage to continue that counts.” — Winston Churchill',
+  '“Believe you can and you\'re halfway there.” — Theodore Roosevelt',
+  '“It always seems impossible until it’s done.” — Nelson Mandela',
+  '“Do what you can, with what you have, where you are.” — Theodore Roosevelt',
+  '“Dream big and dare to fail.” — Norman Vaughan',
+  '“Act as if what you do makes a difference. It does.” — William James',
+  '“Success usually comes to those who are too busy to be looking for it.” — Henry David Thoreau',
+  '“Don’t watch the clock; do what it does. Keep going.” — Sam Levenson',
+  '“Opportunities don\'t happen. You create them.” — Chris Grosser',
+  '“Hardships often prepare ordinary people for an extraordinary destiny.” — C. S. Lewis',
+  '“Start where you are. Use what you have. Do what you can.” — Arthur Ashe',
+  '“If you can dream it, you can do it.” — Walt Disney',
+  '“The future belongs to those who believe in the beauty of their dreams.” — Eleanor Roosevelt',
+  '“Try not to become a man of success, but rather become a man of value.” — Albert Einstein',
+  '“What we think, we become.” — Buddha',
+  '“Turn your wounds into wisdom.” — Oprah Winfrey',
+  '“Everything you can imagine is real.” — Pablo Picasso',
+  '“Do one thing every day that scares you.” — Eleanor Roosevelt',
+  '“The best way to predict the future is to create it.” — Peter Drucker'
+];
+let pomodoroMode = 'pomodoro';
+let pomodoroRemainingSeconds = pomodoroMinutes * 60;
+let pomodoroCompletedCount = 0;
+let pomodoroRunning = false;
+let pomodoroTimerId = null;
+let pomodoroTickTs = 0;
+let pomodoroQuoteOrder = shuffled(POMODORO_QUOTES.map((_,i)=>i));
+let pomodoroQuoteCursor = 0;
+let ultraRoundActive = false;
+let ultraCorrectCount = 0;
+let ultraQuestionTimerId = null;
+let ultraQuestionRemaining = 0;
 
 function saveSettings(){
   localStorage.setItem('derivatives-settings', JSON.stringify({
-    focusMode, lightTheme, autoNextMode, autoNextSeconds, hideSolvedPractice
+    focusMode,
+    lightTheme,
+    autoNextMode,
+    autoNextSeconds,
+    hideSolvedPractice,
+    pomodoroMinutes,
+    pomodoroShortBreakMinutes,
+    pomodoroLongBreakMinutes,
+    pomodoroAutoStartBreaks,
+    pomodoroAutoStartPomodoros,
+    pomodoroLongBreakInterval,
+    ultraSeriousMode
   }));
+}
+
+function pad2(n){ return String(n).padStart(2,'0'); }
+function formatClock(totalSec){
+  const sec = Math.max(0, Math.floor(totalSec));
+  const m = Math.floor(sec/60);
+  const s = sec%60;
+  return `${pad2(m)}:${pad2(s)}`;
+}
+
+function pomodoroModeLabel(mode){
+  if(mode==='shortBreak') return 'Short Break';
+  if(mode==='longBreak') return 'Long Break';
+  return 'Pomodoro';
+}
+
+function pomodoroModeMinutes(mode){
+  if(mode==='shortBreak') return pomodoroShortBreakMinutes;
+  if(mode==='longBreak') return pomodoroLongBreakMinutes;
+  return pomodoroMinutes;
+}
+
+function resetPomodoro(mode=pomodoroMode){
+  pomodoroMode = mode;
+  pomodoroRemainingSeconds = pomodoroModeMinutes(mode)*60;
+  updatePomodoroUi();
+}
+
+function nextPomodoroQuote(){
+  if(pomodoroQuoteCursor>=pomodoroQuoteOrder.length){
+    pomodoroQuoteOrder = shuffled(POMODORO_QUOTES.map((_,i)=>i));
+    pomodoroQuoteCursor = 0;
+  }
+  const idx = pomodoroQuoteOrder[pomodoroQuoteCursor++];
+  return POMODORO_QUOTES[idx];
+}
+
+function playPomodoroSound(){
+  try{
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if(!Ctx) return;
+    const ctx = new Ctx();
+    const now = ctx.currentTime;
+    [0,0.22,0.44].forEach((offset, i)=>{
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type='sine';
+      osc.frequency.value = i===1 ? 1046.5 : 880;
+      gain.gain.setValueAtTime(0.0001, now+offset);
+      gain.gain.exponentialRampToValueAtTime(0.18, now+offset+0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now+offset+0.18);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now+offset);
+      osc.stop(now+offset+0.2);
+    });
+    setTimeout(()=>ctx.close(), 1200);
+  }catch{}
+}
+
+function closePomodoroPopup(){
+  const host=document.getElementById('pomodoroHost');
+  if(host) host.innerHTML='';
+}
+
+function showPomodoroPopup(quote, nextMode, autoStart){
+  const host=document.getElementById('pomodoroHost');
+  if(!host) return;
+  host.innerHTML=`<div class="popup-overlay"><div class="popup-card">
+    <h3 class="popup-title">⏰ Session completed</h3>
+    <p><strong>Next:</strong> ${pomodoroModeLabel(nextMode)} (${pomodoroModeMinutes(nextMode)} min)</p>
+    <div class="popup-hint">${quote}</div>
+    <div class="popup-actions">
+      <button class="btn" id="pomodoroPopupStart">${autoStart?'Running…':'Start next session'}</button>
+      <button class="btn" id="pomodoroPopupClose">Close</button>
+    </div>
+  </div></div>`;
+  document.getElementById('pomodoroPopupStart').onclick=()=>{
+    if(!pomodoroRunning) startPomodoro();
+    closePomodoroPopup();
+  };
+  document.getElementById('pomodoroPopupClose').onclick=closePomodoroPopup;
+}
+
+function updatePomodoroUi(){
+  const badge=document.getElementById('pomodoroBadge');
+  if(badge) badge.textContent=`⏰ ${pomodoroModeLabel(pomodoroMode)} ${formatClock(pomodoroRemainingSeconds)}${pomodoroRunning?' ▶':''}`;
+  const status=document.getElementById('pomodoroStatus');
+  if(status) status.textContent=`${pomodoroModeLabel(pomodoroMode)} • ${formatClock(pomodoroRemainingSeconds)} • Completed pomodoros: ${pomodoroCompletedCount}`;
+  const startPause=document.getElementById('pomodoroStartPause');
+  if(startPause) startPause.textContent = pomodoroRunning ? 'Pause' : 'Start';
+}
+
+function stopPomodoro(){
+  pomodoroRunning=false;
+  if(pomodoroTimerId){ clearInterval(pomodoroTimerId); pomodoroTimerId=null; }
+  updatePomodoroUi();
+}
+
+function onPomodoroFinished(){
+  playPomodoroSound();
+  const justFinishedMode = pomodoroMode;
+  if(justFinishedMode==='pomodoro'){
+    pomodoroCompletedCount += 1;
+    const longNext = pomodoroCompletedCount % pomodoroLongBreakInterval === 0;
+    pomodoroMode = longNext ? 'longBreak' : 'shortBreak';
+  }else{
+    pomodoroMode = 'pomodoro';
+  }
+  pomodoroRemainingSeconds = pomodoroModeMinutes(pomodoroMode) * 60;
+  const autoStart = justFinishedMode==='pomodoro' ? pomodoroAutoStartBreaks : pomodoroAutoStartPomodoros;
+  const quote = nextPomodoroQuote();
+  showPomodoroPopup(quote, pomodoroMode, autoStart);
+  if(autoStart){
+    pomodoroRunning = true;
+    pomodoroTickTs = Date.now();
+  } else {
+    stopPomodoro();
+  }
+  updatePomodoroUi();
+}
+
+function startPomodoro(){
+  if(pomodoroRunning) return;
+  if(pomodoroRemainingSeconds<=0) pomodoroRemainingSeconds = pomodoroModeMinutes(pomodoroMode) * 60;
+  pomodoroRunning=true;
+  pomodoroTickTs = Date.now();
+  if(pomodoroTimerId) clearInterval(pomodoroTimerId);
+  pomodoroTimerId = setInterval(()=>{
+    if(!pomodoroRunning) return;
+    const now = Date.now();
+    const delta = Math.floor((now - pomodoroTickTs) / 1000);
+    if(delta<=0) return;
+    pomodoroTickTs = now;
+    pomodoroRemainingSeconds -= delta;
+    if(pomodoroRemainingSeconds<=0){
+      pomodoroRemainingSeconds = 0;
+      onPomodoroFinished();
+      return;
+    }
+    updatePomodoroUi();
+  },250);
+  updatePomodoroUi();
 }
 
 function shuffled(arr){
@@ -1048,22 +1256,53 @@ function getQuestionBank(levelIndex){
   return lvl.questionBank || lvl.quiz || [];
 }
 
+function questionPriorityWeight(st){
+  if(!st || st.seen===0 || st.last==='unseen') return 4.0; // prefer unseen
+  if(st.last==='wrong') return 1.8 + Math.min(0.6, st.wrong*0.1); // slightly prefer previously missed
+  if(st.last==='correct' && st.wrong===0) return 0.25; // well-solved least likely
+  return 1.0; // mixed history
+}
+
+function weightedPick(pool, count, levelIndex){
+  const available=[...pool];
+  const picked=[];
+  while(available.length && picked.length<count){
+    const weights = available.map(it=>{
+      const key = sourceKeyForQuestionTemplate(it.q, levelIndex, it.bankIdx);
+      const st = answerMemory[key] || {seen:0,correct:0,wrong:0,last:'unseen'};
+      return questionPriorityWeight(st);
+    });
+    const totalW = weights.reduce((a,b)=>a+b,0);
+    let r = Math.random() * (totalW || 1);
+    let pickIndex = 0;
+    for(let i=0;i<available.length;i++){
+      r -= weights[i];
+      if(r<=0){ pickIndex=i; break; }
+    }
+    picked.push(available[pickIndex]);
+    available.splice(pickIndex,1);
+  }
+  return picked;
+}
+
 function ensureQuizSet(levelIndex, forceNew=false){
   if(forceNew || !activeQuizzes[levelIndex]){
     const bank = getQuestionBank(levelIndex);
-    const calcPool = bank.filter(q=>q.type==='calc' || q.type==='calcVar');
-    const mcqPool = bank.filter(q=>q.type==='mcq');
+    const bankEntries = bank.map((q,bankIdx)=>({q,bankIdx}));
+    const calcPool = bankEntries.filter(it=>it.q.type==='calc' || it.q.type==='calcVar');
+    const mcqPool = bankEntries.filter(it=>it.q.type==='mcq');
     const total = Math.min(QUESTIONS_PER_ROUND, bank.length);
     const desiredCalcRaw = 2 + Math.floor(Math.random()*2); // 2 or 3
     const calcCount = Math.max(0, Math.min(desiredCalcRaw, calcPool.length, total));
     const mcqCount = Math.max(0, total - calcCount);
 
-    const pickedCalc = shuffled(calcPool).slice(0, calcCount);
-    const pickedMcq = shuffled(mcqPool).slice(0, mcqCount);
-    const picked = shuffled([...pickedCalc, ...pickedMcq]).map((q,idx)=>materializeQuestion(q, levelIndex, idx));
+    const pickedCalc = weightedPick(calcPool, calcCount, levelIndex);
+    const pickedMcq = weightedPick(mcqPool, mcqCount, levelIndex);
+    const picked = shuffled([...pickedCalc, ...pickedMcq]).map(it=>materializeQuestion(it.q, levelIndex, it.bankIdx));
 
     activeQuizzes[levelIndex]=picked;
     results[levelIndex]=Array(picked.length).fill(false);
+    answeredByLevel[levelIndex]=Array(picked.length).fill(false);
     qIndex=0;
   }
   return activeQuizzes[levelIndex];
@@ -1115,12 +1354,30 @@ function showSettingsMenu(){
     <h3 class="popup-title">⚙️ Settings</h3>
     <div class="settings-row"><label for="setTheme">Theme</label><div class="inline"><input id="setTheme" type="checkbox" ${lightTheme?'checked':''}/><span>Light mode</span></div></div>
     <div class="settings-row"><label for="setFocus">Focus Mode</label><div class="inline"><input id="setFocus" type="checkbox" ${focusMode?'checked':''}/><span>Hide sidebar and top intro</span></div></div>
+    <div class="settings-row"><label for="setUltra">ULTRA SERIOUS MODE</label><div class="inline"><input id="setUltra" type="checkbox" ${ultraSeriousMode?'checked':''}/><span>Timed locked practice</span></div></div>
     <div class="settings-row"><label>Auto next (correct answer)</label><div class="inline"><label><input type="radio" name="nextMode" value="click" ${autoNextMode==='click'?'checked':''}/> Click only</label><label><input type="radio" name="nextMode" value="auto" ${autoNextMode==='auto'?'checked':''}/> Auto</label></div></div>
     <div class="settings-row"><label for="setDelay">Auto delay</label><div class="inline"><input id="setDelay" type="range" min="1" max="10" value="${autoNextSeconds}" ${autoNextMode==='click'?'disabled':''}/><span id="setDelayVal">${autoNextSeconds}s</span></div></div>
     <div class="settings-help">Set how many seconds to wait before jumping to the next question when auto mode is enabled.</div>
     <div class="settings-row"><label for="setHideSolved">Practice: hide solved questions</label><div class="inline"><input id="setHideSolved" type="checkbox" ${hideSolvedPractice?'checked':''}/><span>Skip solved and prevent going back to them</span></div></div>
     <div class="settings-row"><label>Instructor unlock</label><div class="inline"><button class="btn" id="openUnlockFromSettings">Unlock now</button></div></div>
     <div class="settings-row"><label>Review memory</label><div class="inline"><button class="btn" id="resetMemoryBtn">Reset results</button></div></div>
+    <div class="pomodoro-group">
+      <h4 style="margin:0">⏱️ Built-in Pomodoro</h4>
+      <div class="pomodoro-grid">
+        <div><label for="setPomodoro">Pomodoro (min)</label><input id="setPomodoro" type="number" min="1" max="120" value="${pomodoroMinutes}"/></div>
+        <div><label for="setPomodoroShort">Short break</label><input id="setPomodoroShort" type="number" min="1" max="60" value="${pomodoroShortBreakMinutes}"/></div>
+        <div><label for="setPomodoroLong">Long break</label><input id="setPomodoroLong" type="number" min="1" max="90" value="${pomodoroLongBreakMinutes}"/></div>
+      </div>
+      <div class="settings-row"><label for="setAutoBreaks">Auto start breaks</label><div class="inline"><input id="setAutoBreaks" type="checkbox" ${pomodoroAutoStartBreaks?'checked':''}/></div></div>
+      <div class="settings-row"><label for="setAutoPomodoros">Auto start pomodoros</label><div class="inline"><input id="setAutoPomodoros" type="checkbox" ${pomodoroAutoStartPomodoros?'checked':''}/></div></div>
+      <div class="settings-row"><label for="setLongInterval">Long break interval</label><div class="inline"><input id="setLongInterval" type="number" min="2" max="10" value="${pomodoroLongBreakInterval}" style="width:80px"/></div></div>
+      <div class="pomodoro-status" id="pomodoroStatus"></div>
+      <div class="pomodoro-actions">
+        <button class="btn" id="pomodoroStartPause">${pomodoroRunning?'Pause':'Start'}</button>
+        <button class="btn" id="pomodoroReset">Reset current</button>
+        <button class="btn" id="pomodoroSkip">Skip session</button>
+      </div>
+    </div>
     <div class="feedback" id="settingsFb"></div>
     <div class="popup-actions">
       <button class="btn" id="settingsClose">Close</button>
@@ -1136,7 +1393,8 @@ function showSettingsMenu(){
   };
 
   document.getElementById('setTheme').onchange=(e)=>{ lightTheme=e.target.checked; applyTheme(); saveSettings(); };
-  document.getElementById('setFocus').onchange=(e)=>{ focusMode=e.target.checked; applyFocusMode(); saveSettings(); };
+  document.getElementById('setFocus').onchange=(e)=>{ focusMode=e.target.checked; if(ultraSeriousMode && !focusMode) focusMode=true; applyFocusMode(); saveSettings(); };
+  document.getElementById('setUltra').onchange=(e)=>{ setUltraSeriousMode(e.target.checked); if(e.target.checked){ close(); } };
   document.querySelectorAll('input[name="nextMode"]').forEach(r=>r.onchange=()=>{
     autoNextMode=document.querySelector('input[name="nextMode"]:checked')?.value||'click';
     refreshDelayUi();
@@ -1153,6 +1411,47 @@ function showSettingsMenu(){
     renderPractice();
     saveSettings();
   };
+  const sanitizeMinutes = (v,min,max,fallback)=>Math.min(max, Math.max(min, Number(v)||fallback));
+  document.getElementById('setPomodoro').onchange=(e)=>{
+    pomodoroMinutes = sanitizeMinutes(e.target.value,1,120,pomodoroMinutes);
+    e.target.value = pomodoroMinutes;
+    if(pomodoroMode==='pomodoro' && !pomodoroRunning) resetPomodoro('pomodoro');
+    saveSettings();
+  };
+  document.getElementById('setPomodoroShort').onchange=(e)=>{
+    pomodoroShortBreakMinutes = sanitizeMinutes(e.target.value,1,60,pomodoroShortBreakMinutes);
+    e.target.value = pomodoroShortBreakMinutes;
+    if(pomodoroMode==='shortBreak' && !pomodoroRunning) resetPomodoro('shortBreak');
+    saveSettings();
+  };
+  document.getElementById('setPomodoroLong').onchange=(e)=>{
+    pomodoroLongBreakMinutes = sanitizeMinutes(e.target.value,1,90,pomodoroLongBreakMinutes);
+    e.target.value = pomodoroLongBreakMinutes;
+    if(pomodoroMode==='longBreak' && !pomodoroRunning) resetPomodoro('longBreak');
+    saveSettings();
+  };
+  document.getElementById('setLongInterval').onchange=(e)=>{
+    pomodoroLongBreakInterval = sanitizeMinutes(e.target.value,2,10,pomodoroLongBreakInterval);
+    e.target.value = pomodoroLongBreakInterval;
+    saveSettings();
+  };
+  document.getElementById('setAutoBreaks').onchange=(e)=>{ pomodoroAutoStartBreaks = e.target.checked; saveSettings(); };
+  document.getElementById('setAutoPomodoros').onchange=(e)=>{ pomodoroAutoStartPomodoros = e.target.checked; saveSettings(); };
+  document.getElementById('pomodoroStartPause').onclick=()=>{
+    if(pomodoroRunning) stopPomodoro();
+    else startPomodoro();
+    document.getElementById('pomodoroStartPause').textContent = pomodoroRunning ? 'Pause' : 'Start';
+  };
+  document.getElementById('pomodoroReset').onclick=()=>{
+    stopPomodoro();
+    resetPomodoro(pomodoroMode);
+    document.getElementById('pomodoroStartPause').textContent='Start';
+  };
+  document.getElementById('pomodoroSkip').onclick=()=>{
+    stopPomodoro();
+    onPomodoroFinished();
+    document.getElementById('pomodoroStartPause').textContent = pomodoroRunning ? 'Pause' : 'Start';
+  };
 
   document.getElementById('resetMemoryBtn').onclick=()=>{
     Object.keys(answerMemory).forEach(k=>delete answerMemory[k]);
@@ -1164,6 +1463,7 @@ function showSettingsMenu(){
   document.getElementById('openUnlockFromSettings').onclick=()=>{ close(); showUnlockPasswordPrompt(); };
   document.getElementById('settingsClose').onclick=close;
   refreshDelayUi();
+  updatePomodoroUi();
 }
 
 function showUnlockPasswordPrompt(){
@@ -1180,6 +1480,48 @@ function showUnlockPasswordPrompt(){
   document.getElementById('unlockClose').onclick=()=>{host.innerHTML='';};
 }
 
+function clearUltraQuestionTimer(){
+  if(ultraQuestionTimerId){ clearInterval(ultraQuestionTimerId); ultraQuestionTimerId=null; }
+}
+
+function updateUltraBadge(){
+  const b=document.getElementById('ultraBadge');
+  if(!b) return;
+  b.style.display = ultraSeriousMode ? 'inline-block' : 'none';
+}
+
+function applyUltraSeriousModeState(){
+  updateUltraBadge();
+  if(ultraSeriousMode){
+    focusMode = true;
+    applyFocusMode();
+  }
+}
+
+function startUltraRound(forceNew=true){
+  ultraRoundActive = true;
+  ultraCorrectCount = 0;
+  qIndex = 0;
+  if(forceNew) ensureQuizSet(selectedLevel, true);
+}
+
+function setUltraSeriousMode(enabled){
+  ultraSeriousMode = !!enabled;
+  if(ultraSeriousMode){
+    focusMode = true;
+    selectedLevel = Math.min(state.current, course.length-1);
+    currentTab = 'practice';
+    startUltraRound(true);
+  } else {
+    ultraRoundActive = false;
+    clearUltraQuestionTimer();
+  }
+  applyUltraSeriousModeState();
+  saveSettings();
+  renderLevels();
+  renderContent();
+}
+
 function renderLevels(){
   const box=document.getElementById('levels'); box.innerHTML='';
   box.style.display = levelsCollapsed ? 'none' : 'grid';
@@ -1190,15 +1532,22 @@ function renderLevels(){
     const d=document.createElement('div');
     d.className='level '+(state.completed.includes(i)?'completed ':i===state.current?'current ':'')+(!isUnlocked(i)?'locked':'');
     d.innerHTML=`<div class="name">Level ${i+1} — ${c.title}</div><div class="status">${state.completed.includes(i)?'Completed':i===state.current?'Current':'Locked'}</div>`;
-    d.onclick=()=>{if(isUnlocked(i)){selectedLevel=i;qIndex=0;ensureQuizSet(selectedLevel);renderContent();renderLevels();}};
+    d.onclick=()=>{if(ultraSeriousMode && ultraRoundActive){pop('ULTRA SERIOUS MODE: level switch is locked during the round.');return;} if(isUnlocked(i)){selectedLevel=i;qIndex=0;ensureQuizSet(selectedLevel);renderContent();renderLevels();}};
     box.appendChild(d);
   });
   progressEl.textContent = `Completed levels: ${state.completed.length}/${course.length}`;
 }
 function renderContent(){
+  if(ultraSeriousMode && ultraRoundActive) currentTab='practice';
   const lvl=course[selectedLevel];
   document.getElementById('levelTitle').textContent=`Level ${selectedLevel+1} — ${lvl.title}`;
-  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===currentTab));
+  document.querySelectorAll('.tab').forEach(b=>{
+    b.classList.toggle('active',b.dataset.tab===currentTab);
+    const locked = ultraSeriousMode && ultraRoundActive && b.dataset.tab!=='practice';
+    b.disabled = locked;
+    b.style.opacity = locked ? '0.55' : '1';
+    b.style.cursor = locked ? 'not-allowed' : 'pointer';
+  });
   const th=document.getElementById('theoryPane');
   const calc=document.getElementById('calculationPane');
   const pr=document.getElementById('practicePane');
@@ -1232,12 +1581,12 @@ function renderContent(){
   renderReview();
 }
 
-let qIndex=0; let results={};
+let qIndex=0; let results={}; let answeredByLevel={};
 
 function getPracticeIndexes(levelIndex){
   const quizSet=ensureQuizSet(levelIndex);
-  if(!hideSolvedPractice) return quizSet.map((_,i)=>i);
-  return quizSet.map((_,i)=>i).filter(i=>!results[levelIndex][i]);
+  const answered = answeredByLevel[levelIndex] || Array(quizSet.length).fill(false);
+  return quizSet.map((_,i)=>i).filter(i=>!answered[i]);
 }
 
 function nextQuestion(){
@@ -1247,40 +1596,43 @@ function nextQuestion(){
   renderPractice();
 }
 
-function showResultPopup({ok,hint,onConfirm}){
+function showResultPopup({ok,hint,onConfirm,userAnswer,correctAnswer}){
   const host=document.getElementById('popupHost');
-  const autoEnabled = ok ? autoNextMode==='auto' : true;
-  const secsStart = ok ? autoNextSeconds : 10;
+  const forceContinue = !ok;
+  const autoEnabled = forceContinue || autoNextMode==='auto';
+  const secsStart = forceContinue ? 4 : autoNextSeconds;
   let secs = secsStart;
+  const hasComparison = userAnswer!==undefined || correctAnswer!==undefined;
   host.innerHTML=`<div class="popup-overlay"><div class="popup-card">
     <h3 class="popup-title">${ok?'✅ Correct answer!':'❌ Wrong answer'}</h3>
-    <div>${ok?'Continue to next question?':'Want to try again?'}</div>
+    <div>${ok?'Continue to next question?':'Incorrect answer recorded. Moving to next question.'}</div>
+    ${hasComparison?`<div class="popup-hint">🧮 Your result: <strong>${userAnswer??'-'}</strong><br/>✅ Correct result: <strong>${correctAnswer??'-'}</strong></div>`:''}
     ${ok?'':`<div class="popup-hint">💡 Hint: ${hint||'No hint available.'}</div>`}
-    <div class="timer">${autoEnabled?`Auto ${ok?'continue':'close'} in <strong id="popupTimer">${secs}</strong>s`:'Auto-continue is disabled (click to continue).'}</div>
+    <div class="timer">${autoEnabled?`Auto continue in <strong id="popupTimer">${secs}</strong>s`:'Auto-continue is disabled (click to continue).'}</div>
     <div class="popup-actions">
-      <button class="btn" id="popupConfirm">${ok?'Continue':'Try again now'}</button>
-      <button class="btn" id="popupClose">Close</button>
+      <button class="btn" id="popupConfirm">Continue</button>
+      ${forceContinue?'':`<button class="btn" id="popupClose">Close</button>`}
     </div>
   </div></div>`;
 
   let intv=null;
   const timerEl=document.getElementById('popupTimer');
   const close=()=>{ if(intv) clearInterval(intv); host.innerHTML=''; };
+  const proceed=()=>{ if(onConfirm) onConfirm(); close(); };
+
   if(autoEnabled){
     intv=setInterval(()=>{
       secs-=1;
       if(timerEl) timerEl.textContent=String(Math.max(0,secs));
-      if(secs<=0){
-        if(intv) clearInterval(intv);
-        if(ok && onConfirm) onConfirm();
-        close();
-      }
+      if(secs<=0){ proceed(); }
     },1000);
   }
 
-  document.getElementById('popupConfirm').onclick=()=>{ if(ok && onConfirm) onConfirm(); close(); };
-  document.getElementById('popupClose').onclick=close;
+  document.getElementById('popupConfirm').onclick=proceed;
+  const closeBtn=document.getElementById('popupClose');
+  if(closeBtn) closeBtn.onclick=close;
 }
+
 
 function makeVizHtml(f, vals){
   const eq = (f.equation||'').toLowerCase();
@@ -1394,88 +1746,226 @@ function renderMostImportantCalculation(){
   });
 }
 function renderPractice(){
-  const quizSet=ensureQuizSet(selectedLevel);
-  const practiceIndexes=getPracticeIndexes(selectedLevel);
+  clearUltraQuestionTimer();
   const pane=document.getElementById('practicePane');
 
-  if(!practiceIndexes.length){
+  if(ultraSeriousMode){
+    if(!ultraRoundActive) startUltraRound(true);
+    const quizSet=ensureQuizSet(selectedLevel);
     const total=quizSet.length;
-    const done=results[selectedLevel].filter(Boolean).length;
+    if(qIndex>=total){ qIndex=0; }
+    const actualIdx=qIndex;
+    const q=quizSet[actualIdx];
+    const done=ultraCorrectCount;
+    const timeLimit = q.type==='mcq' ? 10 : 30;
+
     pane.innerHTML=`<div class="qcard">
-      <div class="qmeta"><span>Practice</span><span>Solved: ${done}/${total}</span></div>
-      <div>✅ No pending questions in this set.</div>
-      <div class="settings-help" style="margin-top:8px">${hideSolvedPractice?'Hide solved is ON, so solved questions are not shown.':'All questions are solved.'}</div>
-      <div class="practice-tools" style="margin-top:10px"><button class="btn" id="reshuffleBtn" style="padding:6px 10px">🔀 New random set</button></div>
+      <div class="qmeta"><span>ULTRA • Question ${qIndex+1}/${total}</span><span>Correct: ${done}/${total} • <span id="ultraTimer" class="ultra-timer">${timeLimit}s</span></span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin:6px 0 8px"><div>${q.q}</div></div>
+      <div id="answerArea"></div>
+      <div class="settings-help" style="margin-top:8px">No back/forward, no retry. One attempt per question.</div>
+      <div class="feedback" id="fb"></div>
     </div>`;
-    document.getElementById('reshuffleBtn').onclick=()=>{ensureQuizSet(selectedLevel,true);renderPractice();};
+
+    const timerEl=document.getElementById('ultraTimer');
+    let answered=false;
+    ultraQuestionRemaining=timeLimit;
+    const advanceUltra=(ok, timedOut=false)=>{
+      if(answered) return;
+      answered=true;
+      clearUltraQuestionTimer();
+      if(ok){
+        ultraCorrectCount += 1;
+        results[selectedLevel][actualIdx]=true;
+        recordAnswer(q, selectedLevel, actualIdx, true);
+      }else{
+        recordAnswer(q, selectedLevel, actualIdx, false);
+      }
+      const fb=document.getElementById('fb');
+      if(fb){
+        fb.textContent = ok ? '✅ Correct!' : (timedOut ? '⏱️ Time is up.' : '❌ Wrong.');
+        fb.className = ok ? 'feedback good' : 'feedback bad';
+      }
+      setTimeout(()=>{
+        qIndex += 1;
+        if(qIndex>=total){
+          if(ultraCorrectCount===total){
+            ultraRoundActive=false;
+            if(!state.completed.includes(selectedLevel)) state.completed.push(selectedLevel);
+            if(state.current===selectedLevel && selectedLevel<course.length-1) state.current++;
+            save();
+            renderLevels();
+            if(selectedLevel<course.length-1){
+              selectedLevel += 1;
+              ensureQuizSet(selectedLevel);
+              currentTab='theory';
+              pop('🔥 ULTRA cleared: 10/10! Next level unlocked.');
+            } else {
+              pop('🔥 ULTRA cleared: 10/10! Course fully completed.');
+            }
+            renderContent();
+            return;
+          }
+          pop(`💀 ULTRA round failed (${ultraCorrectCount}/${total}). New random set starts now.`);
+          startUltraRound(true);
+          renderPractice();
+          return;
+        }
+        renderPractice();
+      }, 300);
+    };
+
+    ultraQuestionTimerId=setInterval(()=>{
+      ultraQuestionRemaining -= 1;
+      if(timerEl) timerEl.textContent = `${Math.max(0, ultraQuestionRemaining)}s`;
+      if(ultraQuestionRemaining<=0) advanceUltra(false, true);
+    },1000);
+
+    const a=document.getElementById('answerArea');
+    if(q.type==='mcq'){
+      let selectedChoice='';
+      a.innerHTML=q.options.map((opt,i)=>`<label class="opt" data-opt="${i}"><input type="radio" name="opt" value="${opt}"/> ${String.fromCharCode(65+i)}) ${opt}<span class="keycap">${i+1}</span></label>`).join('');
+      const optionsEls=[...a.querySelectorAll('.opt')];
+      optionsEls.forEach(el=>{
+        el.onclick=()=>{
+          if(answered) return;
+          optionsEls.forEach(x=>x.classList.remove('selected'));
+          el.classList.add('selected');
+          selectedChoice=el.querySelector('input').value;
+          advanceUltra(normalize(selectedChoice)===normalize(q.a), false);
+        };
+      });
+      window.onkeydown=(e)=>{
+        if(answered) return;
+        const n=Number(e.key);
+        if(n>=1 && n<=q.options.length){
+          selectedChoice=q.options[n-1];
+          optionsEls.forEach(x=>x.classList.remove('selected'));
+          if(optionsEls[n-1]) optionsEls[n-1].classList.add('selected');
+          advanceUltra(normalize(selectedChoice)===normalize(q.a), false);
+        }
+      };
+    } else {
+      a.innerHTML=`<input id="calcInput" type="text" value="=" placeholder="Type like Excel: =100-200, then press Enter"/>`;
+      const input=document.getElementById('calcInput');
+      setTimeout(()=>{ input.focus(); input.setSelectionRange(input.value.length, input.value.length); },0);
+      const submit=()=>{
+        if(answered) return;
+        const parsed=evaluateExcelLike(input.value);
+        const candidate = Number.isNaN(parsed) ? input.value : String(parsed);
+        advanceUltra(calcMatch(q.a,candidate), false);
+      };
+      input.addEventListener('keydown',(e)=>{ if(e.key==='Enter') submit(); });
+      window.onkeydown=(e)=>{ if(e.key==='Enter') submit(); };
+    }
+    return;
+  }
+
+  const quizSet=ensureQuizSet(selectedLevel);
+  const answered = answeredByLevel[selectedLevel] || Array(quizSet.length).fill(false);
+  const answeredCount = answered.filter(Boolean).length;
+  const correctCount = results[selectedLevel].filter(Boolean).length;
+  const total=quizSet.length;
+  const practiceIndexes=getPracticeIndexes(selectedLevel);
+
+  if(answeredCount>=total){
+    const passed = correctCount>=9;
+    pane.innerHTML=`<div class="qcard">
+      <div class="qmeta"><span>Practice results</span><span>${correctCount}/${total} correct</span></div>
+      <h3 style="margin:8px 0">${passed?'✅ Passed round':'❌ Round failed'}</h3>
+      <p>You answered <strong>${correctCount}</strong> out of <strong>${total}</strong> questions correctly.</p>
+      <div class="settings-help" style="margin-top:8px">${passed?'9 or 10 correct unlocks the next level.':'You need at least 9 correct answers to unlock the next level.'}</div>
+      <div class="practice-tools" style="margin-top:10px">
+        ${passed && selectedLevel<course.length-1?'<button class="btn" id="nextLevelBtn" style="padding:6px 10px">➡️ Go to next level theory</button>':''}
+        ${passed && selectedLevel>=course.length-1?'<span class="feedback good">🎉 You finished the last level.</span>':''}
+        ${passed?'<button class="btn" id="practiceMoreBtn" style="padding:6px 10px">🎯 Further practice on this level</button>':''}
+        ${!passed?'<button class="btn" id="retryRoundBtn" style="padding:6px 10px">🔁 Retry 10-question round</button>':''}
+      </div>
+    </div>`;
+
+    if(passed){
+      if(!state.completed.includes(selectedLevel)) state.completed.push(selectedLevel);
+      if(state.current===selectedLevel && selectedLevel<course.length-1) state.current++;
+      save();
+      renderLevels();
+      const nbtn=document.getElementById('nextLevelBtn');
+      if(nbtn) nbtn.onclick=()=>{
+        selectedLevel = Math.min(selectedLevel+1, course.length-1);
+        currentTab='theory';
+        qIndex=0;
+        ensureQuizSet(selectedLevel);
+        renderContent();
+      };
+    }
+
+    const pmbtn=document.getElementById('practiceMoreBtn');
+    if(pmbtn) pmbtn.onclick=()=>{ensureQuizSet(selectedLevel,true); renderPractice();};
+    const rbtn=document.getElementById('retryRoundBtn');
+    if(rbtn) rbtn.onclick=()=>{ensureQuizSet(selectedLevel,true); renderPractice();};
+    return;
+  }
+
+  if(!practiceIndexes.length){
+    pane.innerHTML=`<div class="qcard"><div>Loading questions...</div></div>`;
     return;
   }
 
   qIndex=Math.min(Math.max(0,qIndex), practiceIndexes.length-1);
   const actualIdx=practiceIndexes[qIndex];
   const q=quizSet[actualIdx];
-  const alreadySolved = !!results[selectedLevel][actualIdx];
-  const done=results[selectedLevel].filter(Boolean).length;
+  const alreadyAnswered = !!answered[actualIdx];
+  const hist = answerMemory[getQuestionKey(q, selectedLevel, actualIdx)] || {seen:0,correct:0,wrong:0,last:'unseen'};
+  const prevMistakeInfo = hist.last==='wrong'
+    ? `<div class="settings-help" style="margin:6px 0 4px">⚠️ You missed a similar question before (seen: ${hist.seen}, wrong: ${hist.wrong}).</div>`
+    : '';
 
   pane.innerHTML=`<div class="qcard">
-    <div class="qmeta"><span>Question ${qIndex+1}/${practiceIndexes.length}</span><span>Solved: ${done}/${quizSet.length}</span></div>
+    <div class="qmeta"><span>Question ${answeredCount+1}/${total}</span><span>Correct: ${correctCount}/${total}</span></div>
     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin:6px 0 8px"><div>${q.q}</div><button class="btn" id="hintBtn" style="padding:6px 10px">💡 Hint</button></div>
+    ${prevMistakeInfo}
     <div id="hint" class="hint">${q.hint}</div>
     <div id="answerArea"></div>
-    <div class="practice-tools"><button class="btn" id="reshuffleBtn" style="padding:6px 10px">🔀 New random set</button></div>
-    <div class="feedback" id="fb">${alreadySolved?'✅ Already solved.':''}</div>
+    <div class="practice-tools">${answeredCount===0?'<button class="btn" id="reshuffleBtn" style="padding:6px 10px">🔀 New random set</button>':''}</div>
+    <div class="feedback" id="fb">${alreadyAnswered?(results[selectedLevel][actualIdx]?'✅ Already correct.':'❌ Already answered wrong.'):''}</div>
     <div class="nav"><button class="btn" id="prev" ${qIndex===0?'disabled':''}>← Previous</button><button class="btn" id="next" ${qIndex===practiceIndexes.length-1?'disabled':''}>Next →</button></div>
   </div>`;
 
   const evaluateAnswer = (value)=>{
-    if(results[selectedLevel][actualIdx]) return;
+    if(answeredByLevel[selectedLevel][actualIdx]) return;
     const ok = normalize(value)===normalize(q.a);
+    answeredByLevel[selectedLevel][actualIdx]=true;
+    results[selectedLevel][actualIdx]=!!ok;
+    recordAnswer(q, selectedLevel, actualIdx, !!ok);
     const fb=document.getElementById('fb');
-    if(ok){
-      fb.textContent='✅ Correct!';
-      fb.className='feedback good';
-      results[selectedLevel][actualIdx]=true;
-      recordAnswer(q, selectedLevel, actualIdx, true);
-      tryCompleteLevel();
-      const onDone=()=>{
-        const rem=getPracticeIndexes(selectedLevel);
-        if(!rem.length){ qIndex=0; }
-        else if(hideSolvedPractice) qIndex=Math.min(qIndex, rem.length-1);
-        else nextQuestion();
-        renderPractice();
-      };
-      if(hideSolvedPractice) showResultPopup({ok:true,onConfirm:onDone});
-      else showResultPopup({ok:true,onConfirm:nextQuestion});
-    } else {
-      fb.textContent='❌ Not correct yet.';
-      fb.className='feedback bad';
-      recordAnswer(q, selectedLevel, actualIdx, false);
-      document.getElementById('hint').classList.add('show');
-      showResultPopup({ok:false,hint:q.hint});
-    }
+    fb.textContent = ok ? '✅ Correct!' : '❌ Wrong answer recorded.';
+    fb.className = ok ? 'feedback good' : 'feedback bad';
+    if(!ok) document.getElementById('hint').classList.add('show');
+    const popupData = {ok,hint:q.hint,onConfirm:()=>{ nextQuestion(); }};
+    if(q.type==='calc') { popupData.userAnswer = value; popupData.correctAnswer = q.a; }
+    showResultPopup(popupData);
   };
 
   const a=document.getElementById('answerArea');
   if(q.type==='mcq'){
     let selectedChoice='';
-    a.innerHTML=q.options.map((opt,i)=>`<label class="opt" data-opt="${i}"><input type="radio" name="opt" value="${opt}" ${alreadySolved?'disabled':''}/> ${String.fromCharCode(65+i)}) ${opt}<span class="keycap">${i+1}</span></label>`).join('');
+    a.innerHTML=q.options.map((opt,i)=>`<label class="opt" data-opt="${i}"><input type="radio" name="opt" value="${opt}" ${alreadyAnswered?'disabled':''}/> ${String.fromCharCode(65+i)}) ${opt}<span class="keycap">${i+1}</span></label>`).join('');
     const optionsEls=[...a.querySelectorAll('.opt')];
     optionsEls.forEach(el=>{
       el.onclick=()=>{
-        if(results[selectedLevel][actualIdx]) return;
+        if(answeredByLevel[selectedLevel][actualIdx]) return;
         optionsEls.forEach(x=>x.classList.remove('selected'));
         el.classList.add('selected');
         selectedChoice=el.querySelector('input').value;
         evaluateAnswer(selectedChoice);
       };
-      el.style.cursor=results[selectedLevel][actualIdx]?'default':'pointer';
+      el.style.cursor=answeredByLevel[selectedLevel][actualIdx]?'default':'pointer';
     });
 
     window.onkeydown=(e)=>{
       const k=e.key.toLowerCase();
-      if(k==='arrowleft' || k==='a'){ goPrev(); return; }
-      if(k==='arrowright' || k==='d'){ goNext(); return; }
-      if(results[selectedLevel][actualIdx]) return;
+      if(k==='a'){ goPrev(); return; }
+      if(k==='d'){ goNext(); return; }
+      if(answeredByLevel[selectedLevel][actualIdx]) return;
       const n=Number(e.key);
       if(n>=1 && n<=q.options.length){
         selectedChoice=q.options[n-1];
@@ -1488,45 +1978,22 @@ function renderPractice(){
       }
     };
   } else {
-    a.innerHTML=`<input id="calcInput" type="text" placeholder="Type like Excel: =100-200, then press Enter" ${alreadySolved?'readonly':''}/>`;
+    a.innerHTML=`<input id="calcInput" type="text" value="=" placeholder="Type like Excel: =100-200, then press Enter" ${alreadyAnswered?'readonly':''}/>`;
     const input=document.getElementById('calcInput');
-    if(!alreadySolved){
-      setTimeout(()=>{ input.focus(); input.select(); },0);
+    if(!alreadyAnswered){
+      setTimeout(()=>{ input.focus(); input.setSelectionRange(input.value.length, input.value.length); },0);
     }
     const submit=()=>{
-      if(results[selectedLevel][actualIdx]) return;
+      if(answeredByLevel[selectedLevel][actualIdx]) return;
       const parsed=evaluateExcelLike(input.value);
       const candidate = Number.isNaN(parsed) ? input.value : String(parsed);
-      const ok=calcMatch(q.a,candidate);
-      const fb=document.getElementById('fb');
-      if(ok){
-        fb.textContent='✅ Correct!';
-        fb.className='feedback good';
-        results[selectedLevel][actualIdx]=true;
-        recordAnswer(q, selectedLevel, actualIdx, true);
-        tryCompleteLevel();
-        const onDone=()=>{
-          const rem=getPracticeIndexes(selectedLevel);
-          if(!rem.length){ qIndex=0; }
-          else if(hideSolvedPractice) qIndex=Math.min(qIndex, rem.length-1);
-          else nextQuestion();
-          renderPractice();
-        };
-        if(hideSolvedPractice) showResultPopup({ok:true,onConfirm:onDone});
-        else showResultPopup({ok:true,onConfirm:nextQuestion});
-      }else{
-        fb.textContent='❌ Not correct yet.';
-        fb.className='feedback bad';
-        recordAnswer(q, selectedLevel, actualIdx, false);
-        document.getElementById('hint').classList.add('show');
-        showResultPopup({ok:false,hint:q.hint});
-      }
+      evaluateAnswer(candidate);
     };
     input.addEventListener('keydown',(e)=>{if(e.key==='Enter') submit();});
     window.onkeydown=(e)=>{
       const k=e.key.toLowerCase();
-      if(k==='arrowleft' || k==='a'){ goPrev(); return; }
-      if(k==='arrowright' || k==='d'){ goNext(); return; }
+      if(k==='a'){ goPrev(); return; }
+      if(k==='d'){ goNext(); return; }
       if(e.key==='Enter') submit();
     };
   }
@@ -1536,7 +2003,8 @@ function renderPractice(){
   const goNext=()=>{qIndex=Math.min(practiceIndexes.length-1,qIndex+1);renderPractice();};
   document.getElementById('prev').onclick=goPrev;
   document.getElementById('next').onclick=goNext;
-  document.getElementById('reshuffleBtn').onclick=()=>{ensureQuizSet(selectedLevel,true);renderPractice();};
+  const reshuffle=document.getElementById('reshuffleBtn');
+  if(reshuffle) reshuffle.onclick=()=>{ensureQuizSet(selectedLevel,true);renderPractice();};
 }
 function renderReview(){
   const pane=document.getElementById('reviewPane');
@@ -1548,9 +2016,9 @@ function renderReview(){
   });
 
   const filtered = entries.filter(e=>{
-    if(reviewCategory==='wrong') return e.st.wrong>0;
+    if(reviewCategory==='wrong') return e.st.last==='wrong';
     if(reviewCategory==='unseen') return e.st.seen===0;
-    if(reviewCategory==='correct') return e.st.correct>0 && e.st.wrong===0;
+    if(reviewCategory==='correct') return e.st.last==='correct';
     return true;
   });
 
@@ -1560,7 +2028,7 @@ function renderReview(){
       <button class="btn" id="rvUnseen" style="padding:6px 10px">Not seen yet</button>
       <button class="btn" id="rvCorrect" style="padding:6px 10px">Well solved</button>
     </div>
-    ${filtered.length?filtered.map(e=>`<div class="review-item"><div>${e.q.q || e.q.title || 'Question'}</div><div class="review-meta">Seen: ${e.st.seen} | Correct: ${e.st.correct} | Wrong: ${e.st.wrong} | Last: ${e.st.last}</div></div>`).join(''):'<div class="review-meta">No questions in this category yet.</div>'}
+    ${filtered.length?filtered.map(e=>`<div class="review-item"><div>${e.q.q || e.q.title || 'Question'}</div><div class="review-meta">Seen: ${e.st.seen} | Correct: ${e.st.correct} | Wrong: ${e.st.wrong} | Last guess bucket: ${e.st.last==='correct'?'Well solved':e.st.last==='wrong'?'Previous mistake':'Not seen yet'}</div></div>`).join(''):'<div class="review-meta">No questions in this category yet.</div>'}
   </div>`;
 
   const setCat=(c)=>{reviewCategory=c; renderReview();};
@@ -1578,10 +2046,10 @@ function tryCompleteLevel(){
   }
 }
 function pop(msg){const d=document.createElement('div');d.className='unlock-pop';d.textContent=msg;document.body.appendChild(d);setTimeout(()=>d.remove(),1400)}
-document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{currentTab=b.dataset.tab;renderContent();});
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{ if(ultraSeriousMode && ultraRoundActive && b.dataset.tab!=='practice'){ pop('ULTRA SERIOUS MODE: finish the current round first.'); return; } currentTab=b.dataset.tab; if(ultraSeriousMode && currentTab==='practice' && !ultraRoundActive) startUltraRound(true); renderContent();});
 document.getElementById('toggleLevels').onclick=()=>{levelsCollapsed=!levelsCollapsed;renderLevels();};
 document.getElementById('settingsBtn').onclick=showSettingsMenu;
-renderLevels();ensureQuizSet(selectedLevel);renderContent();applyFocusMode();applyTheme();saveSettings();
+renderLevels();ensureQuizSet(selectedLevel);applyUltraSeriousModeState();renderContent();applyFocusMode();applyTheme();updatePomodoroUi();saveSettings();
 </script>
 </body>
 </html>
