@@ -1,0 +1,5 @@
+.gradle/
+local.properties
+**/build/
+app/src/main/assets/index.html
+app/src/main/assets/options.pdf
