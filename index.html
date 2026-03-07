@@ -82,6 +82,11 @@
     .pomodoro-grid input[type="number"]{width:100%;padding:8px;border-radius:8px;border:1px solid #4755ab;background:#101633;color:white}
     .pomodoro-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
     .pomodoro-status{font-size:13px;color:var(--muted);margin-top:6px}
+    .ultra-layout{display:grid;grid-template-columns:minmax(320px,1fr) minmax(360px,1fr);gap:12px;align-items:start}
+    .ultra-video{border:1px solid #334089;border-radius:12px;overflow:hidden;background:#0b1025}
+    .ultra-video iframe{width:100%;height:420px;border:0;background:#000}
+    .ultra-timer{font-weight:700;color:#fbbf24}
+    .ultra-mode-badge{font-size:12px;color:#fca5a5;background:#3a1320;border:1px solid #7f1d1d;border-radius:999px;padding:2px 8px}
     .focus-mode .wrap>h1,.focus-mode .wrap>.subtitle,.focus-mode #sidebarCard{display:none}
     .focus-mode .layout{display:flex;justify-content:center;margin-top:0}
     .focus-mode #contentCard{width:min(980px,96vw)}
@@ -107,8 +112,10 @@
     body.light-theme .vchip{background:#e6ecff;border-color:#9cb1ff;color:#1d2e72}
     body.light-theme .popup-card{background:#f6f8ff;border-color:#a2b3ff}
     body.light-theme .pomodoro-grid input[type="number"]{background:#ffffff;color:#1b2a6d;border-color:#9db0ff}
+    body.light-theme .ultra-video{background:#eef2ff;border-color:#a9b8ff}
+    body.light-theme .ultra-mode-badge{background:#fee2e2;color:#991b1b;border-color:#fecaca}
 
-    @media (max-width:980px){.layout{grid-template-columns:1fr}.levels{grid-template-columns:repeat(3,1fr)}}
+    @media (max-width:980px){.layout{grid-template-columns:1fr}.levels{grid-template-columns:repeat(3,1fr)}.ultra-layout{grid-template-columns:1fr}.ultra-video iframe{height:260px}}
   </style>
 </head>
 <body>
@@ -129,7 +136,7 @@
       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
         <h2 id="levelTitle" style="margin:0"></h2>
         <div style="display:flex;gap:8px;align-items:center">
-          <span class="timer" id="pomodoroBadge"></span>
+          <span class="timer" id="pomodoroBadge"></span><span class="ultra-mode-badge" id="ultraBadge" style="display:none">ULTRA SERIOUS MODE</span>
           <button class="btn" id="settingsBtn" style="padding:6px 10px">⚙️ Settings</button>
         </div>
       </div>
@@ -1019,6 +1026,7 @@ let lightTheme = !!settings.lightTheme;
 let autoNextMode = settings.autoNextMode==='auto' ? 'auto' : 'click';
 let autoNextSeconds = Math.min(10, Math.max(1, Number(settings.autoNextSeconds)||3));
 let hideSolvedPractice = !!settings.hideSolvedPractice;
+let ultraSeriousMode = !!settings.ultraSeriousMode;
 let pomodoroMinutes = Math.min(120, Math.max(1, Number(settings.pomodoroMinutes)||25));
 let pomodoroShortBreakMinutes = Math.min(60, Math.max(1, Number(settings.pomodoroShortBreakMinutes)||5));
 let pomodoroLongBreakMinutes = Math.min(90, Math.max(1, Number(settings.pomodoroLongBreakMinutes)||15));
@@ -1057,6 +1065,10 @@ let pomodoroTimerId = null;
 let pomodoroTickTs = 0;
 let pomodoroQuoteOrder = shuffled(POMODORO_QUOTES.map((_,i)=>i));
 let pomodoroQuoteCursor = 0;
+let ultraRoundActive = false;
+let ultraCorrectCount = 0;
+let ultraQuestionTimerId = null;
+let ultraQuestionRemaining = 0;
 
 function saveSettings(){
   localStorage.setItem('derivatives-settings', JSON.stringify({
@@ -1070,7 +1082,8 @@ function saveSettings(){
     pomodoroLongBreakMinutes,
     pomodoroAutoStartBreaks,
     pomodoroAutoStartPomodoros,
-    pomodoroLongBreakInterval
+    pomodoroLongBreakInterval,
+    ultraSeriousMode
   }));
 }
 
@@ -1314,6 +1327,7 @@ function showSettingsMenu(){
     <h3 class="popup-title">⚙️ Settings</h3>
     <div class="settings-row"><label for="setTheme">Theme</label><div class="inline"><input id="setTheme" type="checkbox" ${lightTheme?'checked':''}/><span>Light mode</span></div></div>
     <div class="settings-row"><label for="setFocus">Focus Mode</label><div class="inline"><input id="setFocus" type="checkbox" ${focusMode?'checked':''}/><span>Hide sidebar and top intro</span></div></div>
+    <div class="settings-row"><label for="setUltra">ULTRA SERIOUS MODE</label><div class="inline"><input id="setUltra" type="checkbox" ${ultraSeriousMode?'checked':''}/><span>Timed locked practice + video split</span></div></div>
     <div class="settings-row"><label>Auto next (correct answer)</label><div class="inline"><label><input type="radio" name="nextMode" value="click" ${autoNextMode==='click'?'checked':''}/> Click only</label><label><input type="radio" name="nextMode" value="auto" ${autoNextMode==='auto'?'checked':''}/> Auto</label></div></div>
     <div class="settings-row"><label for="setDelay">Auto delay</label><div class="inline"><input id="setDelay" type="range" min="1" max="10" value="${autoNextSeconds}" ${autoNextMode==='click'?'disabled':''}/><span id="setDelayVal">${autoNextSeconds}s</span></div></div>
     <div class="settings-help">Set how many seconds to wait before jumping to the next question when auto mode is enabled.</div>
@@ -1352,7 +1366,8 @@ function showSettingsMenu(){
   };
 
   document.getElementById('setTheme').onchange=(e)=>{ lightTheme=e.target.checked; applyTheme(); saveSettings(); };
-  document.getElementById('setFocus').onchange=(e)=>{ focusMode=e.target.checked; applyFocusMode(); saveSettings(); };
+  document.getElementById('setFocus').onchange=(e)=>{ focusMode=e.target.checked; if(ultraSeriousMode && !focusMode) focusMode=true; applyFocusMode(); saveSettings(); };
+  document.getElementById('setUltra').onchange=(e)=>{ setUltraSeriousMode(e.target.checked); if(e.target.checked){ close(); } };
   document.querySelectorAll('input[name="nextMode"]').forEach(r=>r.onchange=()=>{
     autoNextMode=document.querySelector('input[name="nextMode"]:checked')?.value||'click';
     refreshDelayUi();
@@ -1438,6 +1453,48 @@ function showUnlockPasswordPrompt(){
   document.getElementById('unlockClose').onclick=()=>{host.innerHTML='';};
 }
 
+function clearUltraQuestionTimer(){
+  if(ultraQuestionTimerId){ clearInterval(ultraQuestionTimerId); ultraQuestionTimerId=null; }
+}
+
+function updateUltraBadge(){
+  const b=document.getElementById('ultraBadge');
+  if(!b) return;
+  b.style.display = ultraSeriousMode ? 'inline-block' : 'none';
+}
+
+function applyUltraSeriousModeState(){
+  updateUltraBadge();
+  if(ultraSeriousMode){
+    focusMode = true;
+    applyFocusMode();
+  }
+}
+
+function startUltraRound(forceNew=true){
+  ultraRoundActive = true;
+  ultraCorrectCount = 0;
+  qIndex = 0;
+  if(forceNew) ensureQuizSet(selectedLevel, true);
+}
+
+function setUltraSeriousMode(enabled){
+  ultraSeriousMode = !!enabled;
+  if(ultraSeriousMode){
+    focusMode = true;
+    selectedLevel = Math.min(state.current, course.length-1);
+    currentTab = 'practice';
+    startUltraRound(true);
+  } else {
+    ultraRoundActive = false;
+    clearUltraQuestionTimer();
+  }
+  applyUltraSeriousModeState();
+  saveSettings();
+  renderLevels();
+  renderContent();
+}
+
 function renderLevels(){
   const box=document.getElementById('levels'); box.innerHTML='';
   box.style.display = levelsCollapsed ? 'none' : 'grid';
@@ -1448,15 +1505,22 @@ function renderLevels(){
     const d=document.createElement('div');
     d.className='level '+(state.completed.includes(i)?'completed ':i===state.current?'current ':'')+(!isUnlocked(i)?'locked':'');
     d.innerHTML=`<div class="name">Level ${i+1} — ${c.title}</div><div class="status">${state.completed.includes(i)?'Completed':i===state.current?'Current':'Locked'}</div>`;
-    d.onclick=()=>{if(isUnlocked(i)){selectedLevel=i;qIndex=0;ensureQuizSet(selectedLevel);renderContent();renderLevels();}};
+    d.onclick=()=>{if(ultraSeriousMode && ultraRoundActive){pop('ULTRA SERIOUS MODE: level switch is locked during the round.');return;} if(isUnlocked(i)){selectedLevel=i;qIndex=0;ensureQuizSet(selectedLevel);renderContent();renderLevels();}};
     box.appendChild(d);
   });
   progressEl.textContent = `Completed levels: ${state.completed.length}/${course.length}`;
 }
 function renderContent(){
+  if(ultraSeriousMode && ultraRoundActive) currentTab='practice';
   const lvl=course[selectedLevel];
   document.getElementById('levelTitle').textContent=`Level ${selectedLevel+1} — ${lvl.title}`;
-  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===currentTab));
+  document.querySelectorAll('.tab').forEach(b=>{
+    b.classList.toggle('active',b.dataset.tab===currentTab);
+    const locked = ultraSeriousMode && ultraRoundActive && b.dataset.tab!=='practice';
+    b.disabled = locked;
+    b.style.opacity = locked ? '0.55' : '1';
+    b.style.cursor = locked ? 'not-allowed' : 'pointer';
+  });
   const th=document.getElementById('theoryPane');
   const calc=document.getElementById('calculationPane');
   const pr=document.getElementById('practicePane');
@@ -1652,9 +1716,124 @@ function renderMostImportantCalculation(){
   });
 }
 function renderPractice(){
+  clearUltraQuestionTimer();
+  const pane=document.getElementById('practicePane');
+
+  if(ultraSeriousMode){
+    if(!ultraRoundActive) startUltraRound(true);
+    const quizSet=ensureQuizSet(selectedLevel);
+    const total=quizSet.length;
+    if(qIndex>=total){ qIndex=0; }
+    const actualIdx=qIndex;
+    const q=quizSet[actualIdx];
+    const done=ultraCorrectCount;
+    const timeLimit = q.type==='mcq' ? 10 : 30;
+
+    pane.innerHTML=`<div class="ultra-layout"><div class="qcard">
+      <div class="qmeta"><span>ULTRA • Question ${qIndex+1}/${total}</span><span>Correct: ${done}/${total} • <span id="ultraTimer" class="ultra-timer">${timeLimit}s</span></span></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin:6px 0 8px"><div>${q.q}</div></div>
+      <div id="answerArea"></div>
+      <div class="settings-help" style="margin-top:8px">No back/forward, no retry. One attempt per question.</div>
+      <div class="feedback" id="fb"></div>
+    </div>
+    <div class="ultra-video"><iframe src="https://www.youtube.com/embed/OO14VSx74MU?start=11&autoplay=1&mute=1&rel=0" title="Ultra focus video" allow="autoplay; encrypted-media" allowfullscreen></iframe></div></div>`;
+
+    const timerEl=document.getElementById('ultraTimer');
+    let answered=false;
+    ultraQuestionRemaining=timeLimit;
+    const advanceUltra=(ok, timedOut=false)=>{
+      if(answered) return;
+      answered=true;
+      clearUltraQuestionTimer();
+      if(ok){
+        ultraCorrectCount += 1;
+        results[selectedLevel][actualIdx]=true;
+        recordAnswer(q, selectedLevel, actualIdx, true);
+      }else{
+        recordAnswer(q, selectedLevel, actualIdx, false);
+      }
+      const fb=document.getElementById('fb');
+      if(fb){
+        fb.textContent = ok ? '✅ Correct!' : (timedOut ? '⏱️ Time is up.' : '❌ Wrong.');
+        fb.className = ok ? 'feedback good' : 'feedback bad';
+      }
+      setTimeout(()=>{
+        qIndex += 1;
+        if(qIndex>=total){
+          if(ultraCorrectCount===total){
+            ultraRoundActive=false;
+            if(!state.completed.includes(selectedLevel)) state.completed.push(selectedLevel);
+            if(state.current===selectedLevel && selectedLevel<course.length-1) state.current++;
+            save();
+            renderLevels();
+            if(selectedLevel<course.length-1){
+              selectedLevel += 1;
+              ensureQuizSet(selectedLevel);
+              currentTab='theory';
+              pop('🔥 ULTRA cleared: 10/10! Next level unlocked.');
+            } else {
+              pop('🔥 ULTRA cleared: 10/10! Course fully completed.');
+            }
+            renderContent();
+            return;
+          }
+          pop(`💀 ULTRA round failed (${ultraCorrectCount}/${total}). New random set starts now.`);
+          startUltraRound(true);
+          renderPractice();
+          return;
+        }
+        renderPractice();
+      }, 300);
+    };
+
+    ultraQuestionTimerId=setInterval(()=>{
+      ultraQuestionRemaining -= 1;
+      if(timerEl) timerEl.textContent = `${Math.max(0, ultraQuestionRemaining)}s`;
+      if(ultraQuestionRemaining<=0) advanceUltra(false, true);
+    },1000);
+
+    const a=document.getElementById('answerArea');
+    if(q.type==='mcq'){
+      let selectedChoice='';
+      a.innerHTML=q.options.map((opt,i)=>`<label class="opt" data-opt="${i}"><input type="radio" name="opt" value="${opt}"/> ${String.fromCharCode(65+i)}) ${opt}<span class="keycap">${i+1}</span></label>`).join('');
+      const optionsEls=[...a.querySelectorAll('.opt')];
+      optionsEls.forEach(el=>{
+        el.onclick=()=>{
+          if(answered) return;
+          optionsEls.forEach(x=>x.classList.remove('selected'));
+          el.classList.add('selected');
+          selectedChoice=el.querySelector('input').value;
+          advanceUltra(normalize(selectedChoice)===normalize(q.a), false);
+        };
+      });
+      window.onkeydown=(e)=>{
+        if(answered) return;
+        const n=Number(e.key);
+        if(n>=1 && n<=q.options.length){
+          selectedChoice=q.options[n-1];
+          optionsEls.forEach(x=>x.classList.remove('selected'));
+          if(optionsEls[n-1]) optionsEls[n-1].classList.add('selected');
+          advanceUltra(normalize(selectedChoice)===normalize(q.a), false);
+        }
+      };
+    } else {
+      a.innerHTML=`<input id="calcInput" type="text" value="=" placeholder="Type like Excel: =100-200, then press Enter"/>`;
+      const input=document.getElementById('calcInput');
+      setTimeout(()=>{ input.focus(); input.setSelectionRange(input.value.length, input.value.length); },0);
+      const submit=()=>{
+        if(answered) return;
+        const parsed=evaluateExcelLike(input.value);
+        const candidate = Number.isNaN(parsed) ? input.value : String(parsed);
+        advanceUltra(calcMatch(q.a,candidate), false);
+      };
+      input.addEventListener('keydown',(e)=>{ if(e.key==='Enter') submit(); });
+      window.onkeydown=(e)=>{ if(e.key==='Enter') submit(); };
+    }
+    return;
+  }
+
   const quizSet=ensureQuizSet(selectedLevel);
   const practiceIndexes=getPracticeIndexes(selectedLevel);
-  const pane=document.getElementById('practicePane');
 
   if(!practiceIndexes.length){
     const total=quizSet.length;
@@ -1836,10 +2015,10 @@ function tryCompleteLevel(){
   }
 }
 function pop(msg){const d=document.createElement('div');d.className='unlock-pop';d.textContent=msg;document.body.appendChild(d);setTimeout(()=>d.remove(),1400)}
-document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{currentTab=b.dataset.tab;renderContent();});
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{ if(ultraSeriousMode && ultraRoundActive && b.dataset.tab!=='practice'){ pop('ULTRA SERIOUS MODE: finish the current round first.'); return; } currentTab=b.dataset.tab; if(ultraSeriousMode && currentTab==='practice' && !ultraRoundActive) startUltraRound(true); renderContent();});
 document.getElementById('toggleLevels').onclick=()=>{levelsCollapsed=!levelsCollapsed;renderLevels();};
 document.getElementById('settingsBtn').onclick=showSettingsMenu;
-renderLevels();ensureQuizSet(selectedLevel);renderContent();applyFocusMode();applyTheme();updatePomodoroUi();saveSettings();
+renderLevels();ensureQuizSet(selectedLevel);applyUltraSeriousModeState();renderContent();applyFocusMode();applyTheme();updatePomodoroUi();saveSettings();
 </script>
 </body>
 </html>
