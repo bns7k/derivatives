@@ -415,16 +415,16 @@ const chapter3QuestionBank = [
   {type:'mcq',id:'3-38',q:'Formula for number of hedge contracts N is...',options:['Only beta×Vp/(F×multiplier)','Only h*×VA/VF','Both depending on exposure type','N = VP/S'],a:'Both depending on exposure type',hint:'Use beta formula for index, h* ratio for commodity/asset.'},
   {type:'mcq',id:'3-39',q:'If basis is positive, market is usually in...',options:['Contango','Backwardation','Equilibrium','Crisis'],a:'Backwardation',hint:'S>F implies backwardation.'},
   {type:'mcq',id:'3-40',q:'A strip hedge involves...',options:['Only first month hedge','Series of different maturities matching cash flows','Selling all assets','Using only far contract'],a:'Series of different maturities matching cash flows',hint:'Match multi-date exposure profile.'},
-  {type:'calcVar',id:'3-41',title:'Jet Fuel Cross-Hedge',hint:'h*=ρ(σS/σF), N=h*(V/C).',vars:[['rho',0.55,0.95,'float'],['sigmaS',0.2,0.8,'float'],['sigmaF',0.2,0.9,'float'],['V',500000,5000000,'int'],['C',25000,150000,'int']],build:(v)=>{const h=v.rho*(v.sigmaS/v.sigmaF);const n=h*(v.V/v.C);return {q:`ρ=${v.rho.toFixed(2)}, σS=${v.sigmaS.toFixed(2)}, σF=${v.sigmaF.toFixed(2)}, exposure V=${v.V}, contract value C=${v.C}. Compute h* and contracts N.`,a:`h*=${h.toFixed(4)}, N=${n.toFixed(2)}`};}},
+  {type:'calcVar',id:'3-41',title:'Jet Fuel Cross-Hedge',hint:'h*=ρ(σS/σF), N=h*(V/C).',vars:[['rho',0.55,0.95,'float'],['sigmaS',0.2,0.8,'float'],['sigmaF',0.2,0.9,'float'],['V',500000,5000000,'int'],['C',25000,150000,'int']],build:(v)=>{const h=v.rho*(v.sigmaS/v.sigmaF);const n=h*(v.V/v.C);return {q:`ρ=${v.rho.toFixed(2)}, σS=${v.sigmaS.toFixed(2)}, σF=${v.sigmaF.toFixed(2)}, exposure V=${v.V}, contract value C=${v.C}. Compute contracts N.`,a:String(n.toFixed(2))};}},
   {type:'calcVar',id:'3-42',title:'Portfolio Beta Reduction',hint:'N=(βold-βnew)×Vp/(F×250).',vars:[['betaOld',1.1,1.8,'float'],['betaNew',0.4,1.1,'float'],['Vp',2000000,12000000,'int'],['F',2500,7000,'int']],build:(v)=>{const n=(v.betaOld-v.betaNew)*(v.Vp/(v.F*250));return {q:`βold=${v.betaOld.toFixed(2)}, βnew=${v.betaNew.toFixed(2)}, portfolio=${v.Vp}, index futures=${v.F}, multiplier=250. Contracts to sell?`,a:String(n.toFixed(2))};}},
-  {type:'calcVar',id:'3-43',title:'Basis Risk Outcome',hint:'Basis=S-F; net=S2+(F1-F2).',vars:[['S1',60,120,'float'],['F1',58,118,'float'],['S2',55,125,'float'],['F2',53,123,'float']],build:(v)=>{const b1=v.S1-v.F1,b2=v.S2-v.F2,net=v.S2+(v.F1-v.F2);return {q:`Given S1=${v.S1.toFixed(2)}, F1=${v.F1.toFixed(2)}, S2=${v.S2.toFixed(2)}, F2=${v.F2.toFixed(2)}. Compute initial basis, final basis, and short-hedger net price.`,a:`B1=${b1.toFixed(2)}, B2=${b2.toFixed(2)}, Net=${net.toFixed(2)}`};}},
+  {type:'calcVar',id:'3-43',title:'Basis Risk Outcome',hint:'Basis=S-F; net=S2+(F1-F2).',vars:[['S1',60,120,'float'],['F1',58,118,'float'],['S2',55,125,'float'],['F2',53,123,'float']],build:(v)=>{const b1=v.S1-v.F1,b2=v.S2-v.F2,net=v.S2+(v.F1-v.F2);return {q:`Given S1=${v.S1.toFixed(2)}, F1=${v.F1.toFixed(2)}, S2=${v.S2.toFixed(2)}, F2=${v.F2.toFixed(2)}. Compute short-hedger net price only.`,a:String(net.toFixed(2))};}},
   {type:'calcVar',id:'3-44',title:'Tailing Adjustment',hint:'Ntail=N×e^(-rT).',vars:[['N',10,500,'int'],['r',0.01,0.1,'float'],['T',0.25,2,'float']],build:(v)=>{const n=v.N*Math.exp(-v.r*v.T);return {q:`Unadjusted contracts N=${v.N}, rate r=${v.r.toFixed(4)}, horizon T=${v.T.toFixed(2)} years. Compute tailed contracts.`,a:String(n.toFixed(2))};}},
-  {type:'calcVar',id:'3-45',title:'Regression Hedge Ratio',hint:'ρ=√R² and h*=ρ(σS/σF).',vars:[['R2',0.25,0.98,'float'],['sigmaS',0.15,0.6,'float'],['sigmaF',0.15,0.7,'float']],build:(v)=>{const rho=Math.sqrt(v.R2),h=rho*(v.sigmaS/v.sigmaF);return {q:`R²=${v.R2.toFixed(3)}, σS=${v.sigmaS.toFixed(3)}, σF=${v.sigmaF.toFixed(3)}. Compute ρ and h*.`,a:`rho=${rho.toFixed(4)}, h*=${h.toFixed(4)}`};}},
-  {type:'calcVar',id:'3-46',title:'Rolling Hedge Costs',hint:'Total fees=4X, basis impact=4B.',vars:[['X',5,60,'float'],['B',2,40,'float']],build:(v)=>({q:`If each quarterly roll costs fee X=${v.X.toFixed(2)} and basis slippage B=${v.B.toFixed(2)}, compute total annual fees and annual basis impact (4 rolls).`,a:`Fees=${(4*v.X).toFixed(2)}, BasisImpact=${(4*v.B).toFixed(2)}`} )},
-  {type:'calcVar',id:'3-47',title:'Gold Producer Effective Price',hint:'Futures P&L=Q(F-S); effective price per unit = F.',vars:[['Q',1000,20000,'int'],['F',1500,2600,'float'],['S',1400,2700,'float']],build:(v)=>{const pnl=v.Q*(v.F-v.S);return {q:`Producer hedges quantity Q=${v.Q} at futures F=${v.F.toFixed(2)}; spot at sale is S=${v.S.toFixed(2)}. Compute futures P&L and effective locked-in price per unit.`,a:`PnL=${pnl.toFixed(2)}, EffectivePrice=${v.F.toFixed(2)}`};}},
+  {type:'calcVar',id:'3-45',title:'Regression Hedge Ratio',hint:'ρ=√R² and h*=ρ(σS/σF).',vars:[['R2',0.25,0.98,'float'],['sigmaS',0.15,0.6,'float'],['sigmaF',0.15,0.7,'float']],build:(v)=>{const rho=Math.sqrt(v.R2),h=rho*(v.sigmaS/v.sigmaF);return {q:`R²=${v.R2.toFixed(3)}, σS=${v.sigmaS.toFixed(3)}, σF=${v.sigmaF.toFixed(3)}. Compute h* only.`,a:String(h.toFixed(4))};}},
+  {type:'calcVar',id:'3-46',title:'Rolling Hedge Costs',hint:'Total fees=4X, basis impact=4B.',vars:[['X',5,60,'float'],['B',2,40,'float']],build:(v)=>({q:`If each quarterly roll costs fee X=${v.X.toFixed(2)} and basis slippage B=${v.B.toFixed(2)}, compute annual basis impact only.`,a:String((4*v.B).toFixed(2))} )},
+  {type:'calcVar',id:'3-47',title:'Gold Producer Effective Price',hint:'Futures P&L=Q(F-S); effective price per unit = F.',vars:[['Q',1000,20000,'int'],['F',1500,2600,'float'],['S',1400,2700,'float']],build:(v)=>{const pnl=v.Q*(v.F-v.S);return {q:`Producer hedges quantity Q=${v.Q} at futures F=${v.F.toFixed(2)}; spot at sale is S=${v.S.toFixed(2)}. Compute futures P&L only.`,a:String(pnl.toFixed(2))};}},
   {type:'calcVar',id:'3-48',title:'Index Hedge Profit',hint:'Profit=(I1-I2)×50×N for short futures.',vars:[['I1',3000,6000,'int'],['I2',2800,6200,'int'],['N',1,200,'int']],build:(v)=>({q:`Short index futures: index moves from I1=${v.I1} to I2=${v.I2}, multiplier=50, contracts N=${v.N}. Compute futures profit.`,a:String(((v.I1-v.I2)*50*v.N).toFixed(2))})},
   {type:'calcVar',id:'3-49',title:'Copper Consumer Cost',hint:'Cost=S×Q-(S-F)×N×25,000.',vars:[['S',3,6,'float'],['F',2.8,6.2,'float'],['N',1,40,'int'],['Q',25000,800000,'int']],build:(v)=>{const cost=v.S*v.Q-(v.S-v.F)*v.N*25000;return {q:`Copper consumer with spot S=${v.S.toFixed(3)} $/lb, hedge futures F=${v.F.toFixed(3)}, N=${v.N} contracts (25,000 lb each), quantity Q=${v.Q} lb. Compute total effective cost.`,a:String(cost.toFixed(2))};}},
-  {type:'calcVar',id:'3-50',title:'Correlation Impact',hint:'If σS=σF then h*=ρ.',vars:[['rhoA',0.1,0.95,'float'],['rhoB',0.1,0.95,'float']],build:(v)=>({q:`Case A correlation ρA=${v.rhoA.toFixed(2)}, Case B correlation ρB=${v.rhoB.toFixed(2)} with equal volatilities. Compute h*A and h*B.`,a:`hA=${v.rhoA.toFixed(2)}, hB=${v.rhoB.toFixed(2)}`})}
+  {type:'calcVar',id:'3-50',title:'Correlation Impact',hint:'If σS=σF then h*=ρ.',vars:[['rhoA',0.1,0.95,'float'],['rhoB',0.1,0.95,'float']],build:(v)=>({q:`Case A correlation ρA=${v.rhoA.toFixed(2)}, Case B correlation ρB=${v.rhoB.toFixed(2)} with equal volatilities. Compute difference h*B-h*A.`,a:String((v.rhoB-v.rhoA).toFixed(2))})}
 ];
 
 const chapter4QuestionBank = [
@@ -475,7 +475,7 @@ const chapter4QuestionBank = [
   {type:'calcVar',id:'4-45',title:'Bond Price from Zero Curve',hint:'P=sum(CF_i*e^(-r_i t_i)).',vars:[['CF1',2,30,'float'],['t1',0.5,2.0,'float'],['r1',0.005,0.08,'float'],['CF2',2,30,'float'],['t2',2.5,5.0,'float'],['r2',0.01,0.1,'float'],['CF3',102,130,'float'],['t3',5.5,10.0,'float'],['r3',0.015,0.11,'float']],build:(v)=>{const p=v.CF1*Math.exp(-v.r1*v.t1)+v.CF2*Math.exp(-v.r2*v.t2)+v.CF3*Math.exp(-v.r3*v.t3);return {q:`Cash flows: ${v.CF1.toFixed(2)} at t=${v.t1.toFixed(2)} with r=${v.r1.toFixed(4)}, ${v.CF2.toFixed(2)} at t=${v.t2.toFixed(2)} with r=${v.r2.toFixed(4)}, ${v.CF3.toFixed(2)} at t=${v.t3.toFixed(2)} with r=${v.r3.toFixed(4)}. Compute bond price.`,a:String(p.toFixed(4))};}},
   {type:'calcVar',id:'4-46',title:'Duration Price Change',hint:'ΔP≈-P*D*Δy.',vars:[['P',80,1500,'float'],['D',0.5,15,'float'],['dy',-0.03,0.03,'float']],build:(v)=>({q:`Bond price P=${v.P.toFixed(2)}, duration D=${v.D.toFixed(2)}, yield change Δy=${v.dy.toFixed(4)}. Estimate price change ΔP.`,a:String((-v.P*v.D*v.dy).toFixed(4))})},
   {type:'calcVar',id:'4-47',title:'Convexity-Adjusted Change',hint:'ΔP/P≈-DΔy+0.5*C*(Δy)^2.',vars:[['P',100,1500,'float'],['D',1,15,'float'],['C',5,200,'float'],['dy',-0.03,0.03,'float']],build:(v)=>{const rel=-v.D*v.dy+0.5*v.C*v.dy*v.dy;const dp=v.P*rel;return {q:`Given P=${v.P.toFixed(2)}, D=${v.D.toFixed(2)}, convexity C=${v.C.toFixed(2)}, Δy=${v.dy.toFixed(4)}. Compute convexity-adjusted ΔP.`,a:String(dp.toFixed(4))};}},
-  {type:'calcVar',id:'4-48',title:'FRA Settlement Direction',hint:'Borrower benefits when market>FRA.',vars:[['fra',0.01,0.1,'float'],['mkt',0.01,0.12,'float'],['notional',100000,10000000,'int'],['tau',0.25,1,'float']],build:(v)=>{const payoff=(v.mkt-v.fra)*v.tau*v.notional/(1+v.mkt*v.tau);const side=payoff>=0?'borrower receives':'borrower pays';return {q:`FRA fixed=${v.fra.toFixed(4)}, market=${v.mkt.toFixed(4)}, notional=${v.notional}, accrual τ=${v.tau.toFixed(2)}. Compute settlement (sign from borrower perspective).`,a:`${side}, amount=${Math.abs(payoff).toFixed(2)}`};}},
+  {type:'calcVar',id:'4-48',title:'FRA Settlement Direction',hint:'Borrower benefits when market>FRA.',vars:[['fra',0.01,0.1,'float'],['mkt',0.01,0.12,'float'],['notional',100000,10000000,'int'],['tau',0.25,1,'float']],build:(v)=>{const payoff=(v.mkt-v.fra)*v.tau*v.notional/(1+v.mkt*v.tau);const side=payoff>=0?'borrower receives':'borrower pays';return {q:`FRA fixed=${v.fra.toFixed(4)}, market=${v.mkt.toFixed(4)}, notional=${v.notional}, accrual τ=${v.tau.toFixed(2)}. Compute borrower settlement amount (signed).`,a:String(payoff.toFixed(2))};}},
   {type:'calcVar',id:'4-49',title:'Zero Rate from Price',hint:'r=(1/T)ln(FV/PV).',vars:[['PV',700,990,'float'],['FV',1000,1200,'float'],['T',0.25,10,'float']],build:(v)=>({q:`Zero-coupon bond priced PV=${v.PV.toFixed(2)} pays FV=${v.FV.toFixed(2)} at T=${v.T.toFixed(2)}. Compute continuous zero rate r.`,a:String((Math.log(v.FV/v.PV)/v.T).toFixed(6))})},
   {type:'calcVar',id:'4-50',title:'Par Coupon from Discount Factors',hint:'c=(1-DFn)/sum(DF_i).',vars:[['DF1',0.85,0.99,'float'],['DF2',0.75,0.98,'float'],['DF3',0.65,0.97,'float'],['DF4',0.55,0.96,'float']],build:(v)=>{const sum=v.DF1+v.DF2+v.DF3+v.DF4;const c=(1-v.DF4)/sum;return {q:`Annual periods 1..4 with discount factors DF1=${v.DF1.toFixed(4)}, DF2=${v.DF2.toFixed(4)}, DF3=${v.DF3.toFixed(4)}, DF4=${v.DF4.toFixed(4)}. Compute par coupon rate c.`,a:String(c.toFixed(6))};}}
 ];
@@ -575,9 +575,9 @@ const chapter6QuestionBank = [
   {type:'mcq',id:'6-39',q:'Bond portfolio hedge ratio with T-bond futures is...',options:['(Vp*Dp)/(Vf*Df)','Vp/Vf','Dp+Df','Always 1'],a:'(Vp*Dp)/(Vf*Df)',hint:'Duration-dollar matching.'},
   {type:'mcq',id:'6-40',q:'Treasury bond futures are traded mainly on...',options:['NYSE','CBOT (CME Group)','NASDAQ','LSE'],a:'CBOT (CME Group)',hint:'Primary US rates futures venue.'},
   {type:'calcVar',id:'6-41',title:'T-Bond Delivery Settlement',hint:'Cash=(F*CF)+AI.',vars:[['CF',0.85,1.2,'float'],['F',90,110,'float'],['AI',1.5,4.5,'float']],build:(v)=>({q:`CF=${v.CF.toFixed(4)}, futures settlement F=${v.F.toFixed(2)} per $100, accrued interest AI=${v.AI.toFixed(2)}. Compute cash received per $100 face.`,a:String((v.F*v.CF+v.AI).toFixed(4))})},
-  {type:'calcVar',id:'6-42',title:'Identify CTD Bond',hint:'Cost=Price-(F*CF), lower is CTD.',vars:[['P1',95,115,'float'],['CF1',0.9,1.1,'float'],['P2',95,115,'float'],['CF2',0.9,1.1,'float'],['F',100,100,'int']],build:(v)=>{const c1=v.P1-v.F*v.CF1,c2=v.P2-v.F*v.CF2;const ctd=c1<c2?'Bond 1':c2<c1?'Bond 2':'Tie';return {q:`Bond1 price ${v.P1.toFixed(2)} CF ${v.CF1.toFixed(4)}, Bond2 price ${v.P2.toFixed(2)} CF ${v.CF2.toFixed(4)}, futures F=100. Compute delivery costs and identify CTD.`,a:`Cost1=${c1.toFixed(4)}, Cost2=${c2.toFixed(4)}, CTD=${ctd}`};}},
+  {type:'calcVar',id:'6-42',title:'Identify CTD Bond',hint:'Cost=Price-(F*CF), lower is CTD.',vars:[['P1',95,115,'float'],['CF1',0.9,1.1,'float'],['P2',95,115,'float'],['CF2',0.9,1.1,'float'],['F',100,100,'int']],build:(v)=>{const c1=v.P1-v.F*v.CF1,c2=v.P2-v.F*v.CF2;const ctd=c1<c2?'Bond 1':c2<c1?'Bond 2':'Tie';return {q:`Bond1 price ${v.P1.toFixed(2)} CF ${v.CF1.toFixed(4)}, Bond2 price ${v.P2.toFixed(2)} CF ${v.CF2.toFixed(4)}, futures F=100. Compute cost difference Cost1-Cost2.`,a:String((c1-c2).toFixed(4))};}},
   {type:'calcVar',id:'6-43',title:'Eurodollar Futures P&L',hint:'P/L=N*25*(Q2-Q1)*100.',vars:[['N',10,100,'int'],['Q1',94,98,'float'],['Q2',94.1,98.5,'float']],build:(v)=>({q:`Long N=${v.N} Eurodollar futures from Q1=${v.Q1.toFixed(2)} to Q2=${v.Q2.toFixed(2)}. Compute total P/L.`,a:String((v.N*25*(v.Q2-v.Q1)*100).toFixed(2))})},
-  {type:'calcVar',id:'6-44',title:'Implied Rate Change',hint:'Δbps=(Q1-Q2)*100.',vars:[['Q1',96.5,96.5,'float'],['Q2',96.15,96.15,'float']],build:(v)=>{const dbps=(v.Q1-v.Q2)*100;const dir=dbps>0?'rates rose':dbps<0?'rates fell':'no change';return {q:`Eurodollar quote moves Q1=96.50 to Q2=96.15. Compute rate change in bps and direction.`,a:`${dbps.toFixed(2)} bps, ${dir}`};}},
+  {type:'calcVar',id:'6-44',title:'Implied Rate Change',hint:'Δbps=(Q1-Q2)*100.',vars:[['Q1',96.5,96.5,'float'],['Q2',96.15,96.15,'float']],build:(v)=>{const dbps=(v.Q1-v.Q2)*100;const dir=dbps>0?'rates rose':dbps<0?'rates fell':'no change';return {q:`Eurodollar quote moves Q1=96.50 to Q2=96.15. Compute rate change in bps only.`,a:String(dbps.toFixed(2))};}},
   {type:'calcVar',id:'6-45',title:'Accrued Interest',hint:'AI=C*(d1/d2).',vars:[['C',2,4.5,'float'],['d1',30,150,'int'],['d2',180,184,'int']],build:(v)=>({q:`Semiannual coupon C=${v.C.toFixed(2)}, days since last coupon d1=${v.d1}, full period d2=${v.d2}. Compute accrued interest.`,a:String((v.C*(v.d1/v.d2)).toFixed(6))})},
   {type:'calcVar',id:'6-46',title:'Quoted to Dirty Price',hint:'Dirty=Quoted(32nds)+AI.',vars:[['AI',2.25,2.25,'float']],build:(v)=>{const quoted=102+16/32;return {q:`Quoted price is 102'16 (i.e., 102 + 16/32) and AI=2.25. Compute dirty price.`,a:String((quoted+v.AI).toFixed(4))};}},
   {type:'calcVar',id:'6-47',title:'Eurodollar Duration Hedge Contracts',hint:'N=(V*Dp)/(1,000,000*0.25).',vars:[['V',10000000,100000000,'int'],['Dp',2,7,'float']],build:(v)=>({q:`Portfolio value V=${v.V}, duration Dp=${v.Dp.toFixed(2)}. Using Eurodollar futures duration 0.25 and notional 1,000,000, compute hedge contracts N.`,a:String(((v.V*v.Dp)/(1000000*0.25)).toFixed(2))})},
@@ -674,12 +674,12 @@ const chapter8QuestionBank = [
   {type:'calcVar',id:'8-42',title:'CDO-Squared Asset Count',hint:'Total=N*M.',vars:[['N',20,50,'int'],['M',1000,2000,'int']],build:(v)=>({q:`CDO-squared uses mezz tranches from N=${v.N} ABS deals, each with M=${v.M} mortgages. Compute indirect total mortgage count.`,a:String(v.N*v.M)})},
   {type:'calcVar',id:'8-43',title:'Negative Equity',hint:'Equity=Price*(1-P)-Price*(1-D).',vars:[['Price',400000,400000,'int'],['D',0.05,0.10,'float'],['P',0.15,0.25,'float']],build:(v)=>({q:`House price=400,000. Down payment D=${(v.D*100).toFixed(2)}%, price drop P=${(v.P*100).toFixed(2)}%. Compute borrower equity (current value - loan balance).`,a:String((v.Price*(1-v.P)-v.Price*(1-v.D)).toFixed(2))})},
   {type:'calcVar',id:'8-44',title:'Weighted Average Life',hint:'WAL=sum(t*principal)/total.',vars:[['p1',20,20,'int'],['p2',30,30,'int'],['p3',50,50,'int']],build:(v)=>({q:`Principal repayments: 20M in year 1, 30M in year 2, 50M in year 3. Compute WAL.`,a:String(((1*v.p1+2*v.p2+3*v.p3)/(v.p1+v.p2+v.p3)).toFixed(4))})},
-  {type:'calcVar',id:'8-45',title:'Excess Spread',hint:'Spread = asset yield - liabilities - fees.',vars:[['asset',0.08,0.08,'float'],['bond',0.05,0.05,'float'],['fee',0.01,0.01,'float']],build:(v)=>({q:`SPV earns 8%, pays bondholders 5%, servicing fees 1%. Compute excess spread.`,a:`${((v.asset-v.bond-v.fee)*100).toFixed(2)}%`})},
+  {type:'calcVar',id:'8-45',title:'Excess Spread',hint:'Spread = asset yield - liabilities - fees.',vars:[['asset',0.08,0.08,'float'],['bond',0.05,0.05,'float'],['fee',0.01,0.01,'float']],build:(v)=>({q:`SPV earns 8%, pays bondholders 5%, servicing fees 1%. Compute excess spread in percentage points.`,a:String(((v.asset-v.bond-v.fee)*100).toFixed(2))})},
   {type:'calcVar',id:'8-46',title:'Repo Haircut Impact',hint:'Loan=V*(1-H).',vars:[['V',10000000,10000000,'int'],['H',0.10,0.40,'float']],build:(v)=>({q:`Collateral value V=10,000,000 with haircut H=${(v.H*100).toFixed(2)}%. Compute max cash loan.`,a:String((v.V*(1-v.H)).toFixed(2))})},
   {type:'calcVar',id:'8-47',title:'Subprime Teaser Reset Shock',hint:'ΔPayment=300,000*((SOFR+5%)-3%).',vars:[['SOFR',0.045,0.045,'float']],build:(v)=>({q:`ARM principal 300,000 resets from 3% teaser to SOFR+5% with SOFR=4.5%. Compute annual interest payment increase (ignore amortization).`,a:String((300000*((v.SOFR+0.05)-0.03)).toFixed(2))})},
   {type:'calcVar',id:'8-48',title:'Overcollateralization Ratio',hint:'OC=Assets/Liabilities.',vars:[['A',100000000,100000000,'int'],['L',90000000,90000000,'int']],build:(v)=>({q:`SPV assets=100M, issued bonds=90M. Compute OC ratio.`,a:String((v.A/v.L).toFixed(6))})},
-  {type:'calcVar',id:'8-49',title:'Tranche Yield Under Principal Write-down',hint:'Yield=(0.5*P*0.07)/P.',vars:[['coupon',0.07,0.07,'float']],build:(v)=>({q:`Mezz tranche coupon is 7%. Defaults trigger 50% principal reduction; interest paid only on remaining principal. Compute effective yield on original principal.`,a:`${((0.5*v.coupon)*100).toFixed(2)}%`})},
-  {type:'calcVar',id:'8-50',title:'Correlation Impact on Senior Tranche',hint:'At corr=1, tranche risks co-move.',vars:[['corr',1,1,'int']],build:(v)=>({q:`If default correlation is 1.0, compare senior-tranche failure risk to equity-tranche failure risk.`,a:'At perfect correlation, senior and equity become effectively equally exposed to all-or-none default states.'})}
+  {type:'calcVar',id:'8-49',title:'Tranche Yield Under Principal Write-down',hint:'Yield=(0.5*P*0.07)/P.',vars:[['coupon',0.07,0.07,'float']],build:(v)=>({q:`Mezz tranche coupon is 7%. Defaults trigger 50% principal reduction; interest paid only on remaining principal. Compute effective yield in % points.`,a:String(((0.5*v.coupon)*100).toFixed(2))})},
+  {type:'calcVar',id:'8-50',title:'Correlation Input Check',hint:'At corr=1 the input value is one.',vars:[['corr',1,1,'int']],build:(v)=>({q:`Default correlation is fixed at 1.0. Enter the correlation value.`,a:'1'})}
 ];
 
 const chapter9QuestionBank = [
@@ -724,13 +724,13 @@ const chapter9QuestionBank = [
   {type:'mcq',id:'9-39',q:'Most effective CVA reduction tool is...',options:['Advertising','Collateral and netting','Dividends','Buybacks'],a:'Collateral and netting',hint:'Direct exposure mitigation.'},
   {type:'mcq',id:'9-40',q:'Credit spread indicates...',options:['Bank profit','Yield over risk-free compensating default risk','Inflation','Daily price changes'],a:'Yield over risk-free compensating default risk',hint:'Credit-risk premium.'},
   {type:'calcVar',id:'9-41',title:'Simple CVA Expected Loss',hint:'CVA=V*(1-R)*PD.',vars:[['V',500000,2000000,'int'],['R',0.30,0.50,'float'],['PD',0.02,0.02,'float']],build:(v)=>({q:`Exposure V=${v.V}, recovery R=${(v.R*100).toFixed(1)}%, one-year PD=2%. Compute CVA expected loss.`,a:String((v.V*(1-v.R)*v.PD).toFixed(2))})},
-  {type:'calcVar',id:'9-42',title:'Netting Impact',hint:'No-net=sum(max(Vi,0)); net=max(sum(Vi),0).',vars:[['v1',150000,150000,'int'],['v2',-200000,-200000,'int'],['v3',80000,80000,'int']],build:(v)=>{const noNet=Math.max(v.v1,0)+Math.max(v.v2,0)+Math.max(v.v3,0);const net=Math.max(v.v1+v.v2+v.v3,0);return {q:`Trades: +150k, -200k, +80k. Compute exposure without netting and with netting.`,a:`NoNet=${noNet.toFixed(2)}, Net=${net.toFixed(2)}`};}},
+  {type:'calcVar',id:'9-42',title:'Netting Impact',hint:'No-net=sum(max(Vi,0)); net=max(sum(Vi),0).',vars:[['v1',150000,150000,'int'],['v2',-200000,-200000,'int'],['v3',80000,80000,'int']],build:(v)=>{const noNet=Math.max(v.v1,0)+Math.max(v.v2,0)+Math.max(v.v3,0);const net=Math.max(v.v1+v.v2+v.v3,0);return {q:`Trades: +150k, -200k, +80k. Compute net exposure with netting only.`,a:String(net.toFixed(2))};}},
   {type:'calcVar',id:'9-43',title:'Hazard Rate from CDS Spread',hint:'lambda≈spread/(1-R).',vars:[['Sbps',120,300,'int'],['R',0.4,0.4,'float']],build:(v)=>{const s=v.Sbps/10000; const lam=s/(1-v.R); return {q:`CDS spread S=${v.Sbps} bps, recovery R=40%. Compute implied hazard rate λ.`,a:String(lam.toFixed(6))};}},
   {type:'calcVar',id:'9-44',title:'Collateral Threshold and MTA',hint:'Demand=E-T if >=MTA else 0.',vars:[['E',500000,800000,'int'],['T',200000,200000,'int'],['MTA',50000,50000,'int']],build:(v)=>{const d=v.E-v.T; return {q:`Exposure E=${v.E}, threshold T=200,000, MTA=50,000. Compute collateral demand.`,a:String((d>=v.MTA?d:0).toFixed(2))};}},
   {type:'calcVar',id:'9-45',title:'FVA Cost',hint:'FVA=F*spread*time.',vars:[['F',1000000,1000000,'int'],['spread',0.015,0.015,'float'],['T',1,1,'int']],build:(v)=>({q:`Uncollateralized funding need F=1,000,000, funding spread=1.5%, T=1 year. Compute FVA cost.`,a:String((v.F*v.spread*v.T).toFixed(2))})},
   {type:'calcVar',id:'9-46',title:'Bilateral CVA Pricing',hint:'Value=RiskFree-CVA+DVA.',vars:[['rf',100000,100000,'int'],['cva',3500,3500,'int'],['dva',2100,2100,'int']],build:(v)=>({q:`Risk-free value=100,000, CVA=3,500, DVA=2,100. Compute adjusted value.`,a:String((v.rf-v.cva+v.dva).toFixed(2))})},
   {type:'calcVar',id:'9-47',title:'Expected Positive Exposure Average',hint:'EPE=average exposures.',vars:[['e1',40000,40000,'int'],['e2',60000,60000,'int'],['e3',20000,20000,'int']],build:(v)=>({q:`Projected exposures: month1=40k, month2=60k, month3=20k. Compute 3-month EPE.`,a:String(((v.e1+v.e2+v.e3)/3).toFixed(2))})},
-  {type:'calcVar',id:'9-48',title:'LGD Percentage',hint:'LGD=(Principal-Recovered)/Principal.',vars:[['P',1000,1000,'int'],['Rec',350,350,'int']],build:(v)=>({q:`Defaulted bond principal=1,000, recovered=350. Compute LGD %.`,a:`${(((v.P-v.Rec)/v.P)*100).toFixed(2)}%`})},
+  {type:'calcVar',id:'9-48',title:'LGD Percentage',hint:'LGD=(Principal-Recovered)/Principal.',vars:[['P',1000,1000,'int'],['Rec',350,350,'int']],build:(v)=>({q:`Defaulted bond principal=1,000, recovered=350. Compute LGD percentage value.`,a:String((((v.P-v.Rec)/v.P)*100).toFixed(2))})},
   {type:'calcVar',id:'9-49',title:'MVA Cost',hint:'MVA=IM*fundingCost*time.',vars:[['IM',5000000,5000000,'int'],['c',0.008,0.008,'float'],['T',1,1,'int']],build:(v)=>({q:`Initial margin IM=5,000,000, funding cost=0.80% per year, T=1 year. Compute MVA.`,a:String((v.IM*v.c*v.T).toFixed(2))})},
   {type:'calcVar',id:'9-50',title:'WWR-Adjusted CVA',hint:'CVAadj=Base*Multiplier.',vars:[['base',15000,15000,'int'],['m',1.5,1.5,'float']],build:(v)=>({q:`Base CVA=15,000, WWR multiplier=1.5. Compute adjusted CVA.`,a:String((v.base*v.m).toFixed(2))})}
 ];
@@ -1002,6 +1002,33 @@ function evaluateExcelLike(input){
   try{return Function('"use strict";return ('+expr+')')();}catch{return NaN;}
 }
 
+
+function evaluateExcelLikeList(input){
+  const raw = String(input||'').trim();
+  if(!raw) return [];
+
+  const segments = raw.split(/[;,]+/).flatMap(seg=>seg.split('\n'));
+  const parts = segments.map(p=>p.trim()).filter(Boolean);
+
+  return parts.map(part=>{
+    let expr = part;
+    if(expr.includes('=')) expr = expr.split('=').pop().trim(); // accept forms like h*=... or N=...
+    expr = expr.replace(/[×]/g,'*').replace(/[÷]/g,'/');
+
+    let parsed=evaluateExcelLike(expr);
+    if(Number.isNaN(parsed)){
+      // fallback for decimal-comma style in simple tokens
+      parsed=evaluateExcelLike(expr.replace(/(\d),(\d)/g,'$1.$2'));
+    }
+    return Number.isNaN(parsed) ? part : String(parsed);
+  });
+}
+
+function extractNumbers(text){
+  const m=String(text||'').match(/[-+]?\d*\.?\d+/g);
+  if(!m) return [];
+  return m.map(Number).filter(v=>!Number.isNaN(v));
+}
 function numFmt(v){
   if(Math.abs(v)>=1000) return Number(v).toLocaleString('en-US',{maximumFractionDigits:4});
   return Number(v).toFixed(4).replace(/\.0+$/,'').replace(/(\.\d*?)0+$/,'$1');
@@ -1338,6 +1365,24 @@ function calcMatch(ans,input){
   if(na===ni) return true;
   const anum=parseFloat(na), inum=parseFloat(ni);
   if(!isNaN(anum)&&!isNaN(inum)) return Math.abs(anum-inum)<=0.02*Math.max(1,Math.abs(anum));
+
+  const ansNums = extractNumbers(ans);
+  const inNums = extractNumbers(input);
+  if(ansNums.length && inNums.length){
+    if(ansNums.length===inNums.length){
+      let ok=true;
+      for(let i=0;i<ansNums.length;i++){
+        const a=ansNums[i], b=inNums[i];
+        if(Math.abs(a-b)>0.02*Math.max(1,Math.abs(a))){ ok=false; break; }
+      }
+      if(ok) return true;
+    }
+    if(ansNums.length===1){
+      const a=ansNums[0];
+      return inNums.some(b=>Math.abs(a-b)<=0.02*Math.max(1,Math.abs(a)));
+    }
+  }
+
   return ni.includes(na) || na.includes(ni);
 }
 function applyFocusMode(){
@@ -1862,8 +1907,8 @@ function renderPractice(){
       setTimeout(()=>{ input.focus(); input.setSelectionRange(input.value.length, input.value.length); },0);
       const submit=()=>{
         if(answered) return;
-        const parsed=evaluateExcelLike(input.value);
-        const candidate = Number.isNaN(parsed) ? input.value : String(parsed);
+        const computedParts=evaluateExcelLikeList(input.value);
+        const candidate = computedParts.length ? computedParts.join(', ') : input.value;
         advanceUltra(calcMatch(q.a,candidate), false);
       };
       input.addEventListener('keydown',(e)=>{ if(e.key==='Enter') submit(); });
@@ -1996,8 +2041,8 @@ function renderPractice(){
     }
     const submit=()=>{
       if(answeredByLevel[selectedLevel][actualIdx]) return;
-      const parsed=evaluateExcelLike(input.value);
-      const candidate = Number.isNaN(parsed) ? input.value : String(parsed);
+      const computedParts=evaluateExcelLikeList(input.value);
+      const candidate = computedParts.length ? computedParts.join(', ') : input.value;
       evaluateAnswer(candidate);
     };
     input.addEventListener('keydown',(e)=>{if(e.key==='Enter') submit();});
