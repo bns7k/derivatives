@@ -1119,7 +1119,7 @@ function showSettingsMenu(){
     <div class="settings-row"><label for="setDelay">Auto delay</label><div class="inline"><input id="setDelay" type="range" min="1" max="10" value="${autoNextSeconds}" ${autoNextMode==='click'?'disabled':''}/><span id="setDelayVal">${autoNextSeconds}s</span></div></div>
     <div class="settings-help">Set how many seconds to wait before jumping to the next question when auto mode is enabled.</div>
     <div class="settings-row"><label for="setHideSolved">Practice: hide solved questions</label><div class="inline"><input id="setHideSolved" type="checkbox" ${hideSolvedPractice?'checked':''}/><span>Skip solved and prevent going back to them</span></div></div>
-    <div class="settings-row"><label>Instructor unlock</label><div class="inline"><button class="btn" id="openUnlockFromSettings">Open unlock dialog</button></div></div>
+    <div class="settings-row"><label>Instructor unlock</label><div class="inline"><button class="btn" id="openUnlockFromSettings">Unlock now</button></div></div>
     <div class="settings-row"><label>Review memory</label><div class="inline"><button class="btn" id="resetMemoryBtn">Reset results</button></div></div>
     <div class="feedback" id="settingsFb"></div>
     <div class="popup-actions">
@@ -1167,39 +1167,17 @@ function showSettingsMenu(){
 }
 
 function showUnlockPasswordPrompt(){
+  adminOverride=true;
+  renderLevels();
   const host=document.getElementById('popupHost');
   host.innerHTML=`<div class="popup-overlay"><div class="popup-card">
     <h3 class="popup-title">⭐ Instructor Unlock</h3>
-    <div>Enter password to temporarily remove level restrictions (until refresh).</div>
-    <div style="margin-top:10px"><input id="unlockInput" type="password" placeholder="Password"/></div>
-    <div class="feedback" id="unlockFb"></div>
+    <div class="feedback good" style="margin-top:0">✅ Levels unlocked for this session (until page refresh).</div>
     <div class="popup-actions">
-      <button class="btn" id="unlockSubmit">Unlock</button>
-      <button class="btn" id="unlockCancel">Cancel</button>
+      <button class="btn" id="unlockClose">OK</button>
     </div>
   </div></div>`;
-
-  const close=()=>{host.innerHTML='';};
-  const submit=()=>{
-    const val=document.getElementById('unlockInput').value.trim();
-    const fb=document.getElementById('unlockFb');
-    if(val==='2002'){
-      adminOverride=true;
-      renderLevels();
-      fb.className='feedback good';
-      fb.textContent='✅ Unlocked for this session (until page refresh).';
-      setTimeout(close,700);
-    } else {
-      fb.className='feedback bad';
-      fb.textContent='❌ Wrong password.';
-    }
-  };
-
-  document.getElementById('unlockSubmit').onclick=submit;
-  document.getElementById('unlockCancel').onclick=close;
-  const input=document.getElementById('unlockInput');
-  input.focus();
-  input.addEventListener('keydown',(e)=>{if(e.key==='Enter') submit();});
+  document.getElementById('unlockClose').onclick=()=>{host.innerHTML='';};
 }
 
 function renderLevels(){
