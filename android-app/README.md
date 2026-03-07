@@ -42,5 +42,6 @@ android-app/app/build/outputs/apk/debug/app-debug.apk
 A workflow is included at `.github/workflows/android-apk.yml`.
 
 - Go to **Actions → Build Android APK → Run workflow**.
+- If an old failed run exists, trigger a new run after pulling latest workflow changes.
 - Download artifact: `derivatives-course-debug-apk`.
 
