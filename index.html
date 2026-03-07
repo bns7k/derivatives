@@ -189,9 +189,9 @@ const course = [
 ]},
 {title:'Hedging Strategies Using Futures',summary:['Long hedge protects future purchase; short hedge protects future sale.','Basis = Spot - Futures; changing basis creates basis risk.','Cross hedge uses related but not identical futures.','Optimal hedge ratio uses correlation and relative volatilities.','Index futures hedge portfolio market beta exposure.'],quiz:[
 {type:'mcq',q:'When should a company use a long hedge?',options:['Owns asset to sell later','Will buy asset later and fears price increase','Speculate on crash','Increase rate exposure'],a:'Will buy asset later and fears price increase',hint:'Long futures = commitment to buy.'},
-{type:'calc',q:'Hedge 100000 barrels, futures size 1000. Number and side?',a:'100 short',hint:'Selling asset later -> short futures.'},
+{type:'calc',q:'Hedge 100000 barrels with futures size 1000. Number of contracts needed?',a:'100',hint:'Contracts = exposure / contract size.'},
 {type:'mcq',q:'Basis definition?',options:['Futures - Spot','Spot - Futures','Strike - Spot','Initial - Maintenance'],a:'Spot - Futures',hint:'S minus F.'},
-{type:'calc',q:'Basis from +2 to +1. What happened?',a:'weakened',hint:'A decrease in basis is weakening.'},
+{type:'calc',q:'Basis from +2 to +1. Compute basis change (new-old).',a:'-1',hint:'Basis change = 1 - 2.'},
 {type:'mcq',q:'Cross hedging means...',options:['Two exchanges at once','Hedge using related but different asset futures','Two currencies','Use options and futures'],a:'Hedge using related but different asset futures',hint:'No exact contract available.'},
 {type:'calc',q:'rho=0.75, sigma_s=0.60, sigma_f=0.90. Optimal hedge ratio?',a:'0.5',hint:'h*=rho*(sigma_s/sigma_f)'},
 {type:'mcq',q:'Selling index futures against beta=1.2 portfolio aims to...',options:['Remove unsystematic risk','Reduce systematic market risk','Increase profit potential','Raise beta to 2'],a:'Reduce systematic market risk',hint:'Beta measures market sensitivity.'},
@@ -250,7 +250,7 @@ const course = [
 {type:'mcq',q:'Which ABS tranche absorbs losses first?',options:['Senior','Mezzanine','Equity','AAA'],a:'Equity',hint:'Bottom tranche takes first hit.'},
 {type:'mcq',q:'SPV is...',options:['Armored truck','Legal entity holding assets and issuing securities','Central bank office','Mortgage insurance policy'],a:'Legal entity holding assets and issuing securities',hint:'Ring-fenced entity.'},
 {type:'mcq',q:'Why did senior CDO tranches fail?',options:['Rates went to zero','Defaults were highly correlated','Gov stopped printing','Fees unpaid'],a:'Defaults were highly correlated',hint:'Diversification assumption broke.'},
-{type:'calc',q:'Portfolio 100m. Equity tranche 5%. Loss 3m. Which tranche hit and by how much?',a:'equity 3000000',hint:'Losses flow bottom-up.'},
+{type:'calc',q:'Portfolio 100m. Equity tranche 5%. Loss 3m. Amount absorbed by equity tranche?',a:'3000000',hint:'Equity notional is 5m, so full 3m loss fits in equity.'},
 {type:'mcq',q:'Subprime mortgage is...',options:['High down-payment loan','Loan to lower-credit borrower','0% gov loan','Second-home loan'],a:'Loan to lower-credit borrower',hint:'Below prime credit quality.'},
 {type:'calc',q:'Portfolio 200m, equity 10m. Total loss 25m. Mezzanine loss?',a:'15000000',hint:'After equity wiped out, remainder hits mezz.'},
 {type:'mcq',q:'Teaser rate means...',options:['High initial rate','Low intro rate then resets higher','Broker prize','Savings account rate'],a:'Low intro rate then resets higher',hint:'Initially attractive, later expensive.'},
@@ -273,7 +273,7 @@ const course = [
 {type:'mcq',q:'American vs European option difference?',options:['Only US trading','European exercisable anytime','American exercisable anytime until expiry; European only at expiry','European always cheaper'],a:'American exercisable anytime until expiry; European only at expiry',hint:'Exercise flexibility differs.'},
 {type:'calc',q:'Buy call K=50 for 3. Stock at expiry 55. Net profit?',a:'2',hint:'(55-50)-3'},
 {type:'mcq',q:'Writing an option means...',options:['Buying option','Selling option','Registering company','Hedging with futures'],a:'Selling option',hint:'Writer is short option.'},
-{type:'calc',q:'2-for-1 split: one call contract, K=100 on 100 shares. New terms?',a:'2 contracts 50',hint:'Strike halves, quantity doubles.'},
+{type:'calc',q:'2-for-1 split: call strike K=100. New strike after adjustment?',a:'50',hint:'For 2-for-1 split, strike halves.'},
 {type:'mcq',q:'Option is ITM when...',options:['Strike = stock','Premium high','Immediate exercise gives positive payoff','Expiry far away'],a:'Immediate exercise gives positive payoff',hint:'ITM has intrinsic value.'},
 {type:'calc',q:'Buy put K=30 for 2. Break-even stock price?',a:'28',hint:'K - premium.'},
 {type:'mcq',q:'Put intrinsic value is...',options:['max(0,S-K)','max(0,K-S)','Always premium','Time remaining'],a:'max(0,K-S)',hint:'Put gains when strike exceeds spot.'},
@@ -299,7 +299,7 @@ const course = [
 {type:'mcq',q:'Best when expecting very large move but unknown direction?',options:['Bull spread','Butterfly','Long straddle','Covered call'],a:'Long straddle',hint:'Buy call + put same strike.'},
 {type:'calc',q:'Bull call spread: buy K50 call for4, sell K60 call for1. Max profit?',a:'7',hint:'(60-50)-(4-1)'},
 {type:'mcq',q:'Butterfly spread view?',options:['Skyrocket','Crash','Stay near middle strike','Volatility surge'],a:'Stay near middle strike',hint:'Neutral range strategy.'},
-{type:'calc',q:'Straddle K100 total premium 8. Break-even prices?',a:'92 108',hint:'K±premium'},
+{type:'calc',q:'Straddle K100 total premium 8. Lower break-even price?',a:'92',hint:'Lower BE = K - premium.'},
 {type:'mcq',q:'Strangle differs from straddle because...',options:['Only puts','Different strikes, usually cheaper','Only American options','Unlimited both unlike straddle'],a:'Different strikes, usually cheaper',hint:'OTM options reduce cost.'},
 {type:'calc',q:'Bear put spread buy K70 put for5 sell K60 put for2. Max loss?',a:'3',hint:'Net premium paid.'},
 {type:'mcq',q:'A strap is...',options:['Straddle with two calls + one put','Bull spread with puts','Four-strike strategy','Sell options to buy stock'],a:'Straddle with two calls + one put',hint:'Upside-biased volatility bet.'},
@@ -1951,7 +1951,9 @@ function renderPractice(){
     fb.textContent = ok ? '✅ Correct!' : '❌ Wrong answer recorded.';
     fb.className = ok ? 'feedback good' : 'feedback bad';
     if(!ok) document.getElementById('hint').classList.add('show');
-    showResultPopup({ok,hint:q.hint,userAnswer:value,correctAnswer:q.a,onConfirm:()=>{ nextQuestion(); }});
+    const popupData = {ok,hint:q.hint,onConfirm:()=>{ nextQuestion(); }};
+    if(q.type==='calc') { popupData.userAnswer = value; popupData.correctAnswer = q.a; }
+    showResultPopup(popupData);
   };
 
   const a=document.getElementById('answerArea');
