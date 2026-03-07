@@ -71,6 +71,10 @@
     .popup-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
     .timer{color:var(--muted);font-size:13px}
     .star-btn{padding:6px 10px;font-size:16px;line-height:1}
+    .settings-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:10px 0;flex-wrap:wrap}
+    .settings-row label{font-weight:600}
+    .settings-row .inline{display:flex;align-items:center;gap:8px}
+    .settings-help{font-size:12px;color:var(--muted)}
     .focus-mode .wrap>h1,.focus-mode .wrap>.subtitle,.focus-mode #sidebarCard{display:none}
     .focus-mode .layout{display:flex;justify-content:center;margin-top:0}
     .focus-mode #contentCard{width:min(980px,96vw)}
@@ -117,9 +121,7 @@
       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
         <h2 id="levelTitle" style="margin:0"></h2>
         <div style="display:flex;gap:8px;align-items:center">
-          <button class="btn" id="themeToggle" style="padding:6px 10px">Theme: Dark</button>
-          <button class="btn star-btn" id="unlockStar" title="Unlock levels">⭐</button>
-          <button class="btn" id="focusToggle" style="padding:6px 10px">Focus Mode: Off</button>
+          <button class="btn" id="settingsBtn" style="padding:6px 10px">⚙️ Settings</button>
         </div>
       </div>
       <div class="tabs">
@@ -997,14 +999,24 @@ if(!Array.isArray(state.completed)) state.completed=[];
 let selectedLevel = Math.min(state.current, course.length-1);
 let currentTab='theory';
 let levelsCollapsed = false;
-let focusMode = false;
 let adminOverride = false;
-let lightTheme = false;
 let reviewCategory = "wrong";
 const progressEl = document.getElementById('progress');
 const answerMemory = JSON.parse(localStorage.getItem("derivatives-answer-memory")||"{}");
+const settings = JSON.parse(localStorage.getItem('derivatives-settings')||'{}');
+let focusMode = !!settings.focusMode;
+let lightTheme = !!settings.lightTheme;
+let autoNextMode = settings.autoNextMode==='auto' ? 'auto' : 'click';
+let autoNextSeconds = Math.min(10, Math.max(1, Number(settings.autoNextSeconds)||3));
+let hideSolvedPractice = !!settings.hideSolvedPractice;
 const QUESTIONS_PER_ROUND = 10;
 const activeQuizzes = {};
+
+function saveSettings(){
+  localStorage.setItem('derivatives-settings', JSON.stringify({
+    focusMode, lightTheme, autoNextMode, autoNextSeconds, hideSolvedPractice
+  }));
+}
 
 function shuffled(arr){
   const a=[...arr];
@@ -1091,14 +1103,67 @@ function calcMatch(ans,input){
 }
 function applyFocusMode(){
   document.body.classList.toggle('focus-mode', focusMode);
-  const b=document.getElementById('focusToggle');
-  if(b) b.textContent = `Focus Mode: ${focusMode?'On':'Off'}`;
 }
 
 function applyTheme(){
   document.body.classList.toggle('light-theme', lightTheme);
-  const b=document.getElementById('themeToggle');
-  if(b) b.textContent = `Theme: ${lightTheme?'Light':'Dark'}`;
+}
+
+function showSettingsMenu(){
+  const host=document.getElementById('popupHost');
+  host.innerHTML=`<div class="popup-overlay"><div class="popup-card">
+    <h3 class="popup-title">⚙️ Settings</h3>
+    <div class="settings-row"><label for="setTheme">Theme</label><div class="inline"><input id="setTheme" type="checkbox" ${lightTheme?'checked':''}/><span>Light mode</span></div></div>
+    <div class="settings-row"><label for="setFocus">Focus Mode</label><div class="inline"><input id="setFocus" type="checkbox" ${focusMode?'checked':''}/><span>Hide sidebar and top intro</span></div></div>
+    <div class="settings-row"><label>Auto next (correct answer)</label><div class="inline"><label><input type="radio" name="nextMode" value="click" ${autoNextMode==='click'?'checked':''}/> Click only</label><label><input type="radio" name="nextMode" value="auto" ${autoNextMode==='auto'?'checked':''}/> Auto</label></div></div>
+    <div class="settings-row"><label for="setDelay">Auto delay</label><div class="inline"><input id="setDelay" type="range" min="1" max="10" value="${autoNextSeconds}" ${autoNextMode==='click'?'disabled':''}/><span id="setDelayVal">${autoNextSeconds}s</span></div></div>
+    <div class="settings-help">Set how many seconds to wait before jumping to the next question when auto mode is enabled.</div>
+    <div class="settings-row"><label for="setHideSolved">Practice: hide solved questions</label><div class="inline"><input id="setHideSolved" type="checkbox" ${hideSolvedPractice?'checked':''}/><span>Skip solved and prevent going back to them</span></div></div>
+    <div class="settings-row"><label>Instructor unlock</label><div class="inline"><button class="btn" id="openUnlockFromSettings">Open unlock dialog</button></div></div>
+    <div class="settings-row"><label>Review memory</label><div class="inline"><button class="btn" id="resetMemoryBtn">Reset results</button></div></div>
+    <div class="feedback" id="settingsFb"></div>
+    <div class="popup-actions">
+      <button class="btn" id="settingsClose">Close</button>
+    </div>
+  </div></div>`;
+
+  const close=()=>{host.innerHTML='';};
+  const refreshDelayUi=()=>{
+    const mode=document.querySelector('input[name="nextMode"]:checked')?.value||'click';
+    const slider=document.getElementById('setDelay');
+    slider.disabled = mode!=='auto';
+    document.getElementById('setDelayVal').textContent = `${slider.value}s`;
+  };
+
+  document.getElementById('setTheme').onchange=(e)=>{ lightTheme=e.target.checked; applyTheme(); saveSettings(); };
+  document.getElementById('setFocus').onchange=(e)=>{ focusMode=e.target.checked; applyFocusMode(); saveSettings(); };
+  document.querySelectorAll('input[name="nextMode"]').forEach(r=>r.onchange=()=>{
+    autoNextMode=document.querySelector('input[name="nextMode"]:checked')?.value||'click';
+    refreshDelayUi();
+    saveSettings();
+  });
+  document.getElementById('setDelay').oninput=(e)=>{
+    autoNextSeconds=Number(e.target.value);
+    document.getElementById('setDelayVal').textContent=`${autoNextSeconds}s`;
+    saveSettings();
+  };
+  document.getElementById('setHideSolved').onchange=(e)=>{
+    hideSolvedPractice=e.target.checked;
+    qIndex=0;
+    renderPractice();
+    saveSettings();
+  };
+
+  document.getElementById('resetMemoryBtn').onclick=()=>{
+    Object.keys(answerMemory).forEach(k=>delete answerMemory[k]);
+    localStorage.setItem('derivatives-answer-memory', JSON.stringify(answerMemory));
+    document.getElementById('settingsFb').className='feedback good';
+    document.getElementById('settingsFb').textContent='✅ Review memory reset.';
+    renderReview();
+  };
+  document.getElementById('openUnlockFromSettings').onclick=()=>{ close(); showUnlockPasswordPrompt(); };
+  document.getElementById('settingsClose').onclick=close;
+  refreshDelayUi();
 }
 
 function showUnlockPasswordPrompt(){
@@ -1191,38 +1256,49 @@ function renderContent(){
 
 let qIndex=0; let results={};
 
+function getPracticeIndexes(levelIndex){
+  const quizSet=ensureQuizSet(levelIndex);
+  if(!hideSolvedPractice) return quizSet.map((_,i)=>i);
+  return quizSet.map((_,i)=>i).filter(i=>!results[levelIndex][i]);
+}
+
 function nextQuestion(){
-  const quizSet=ensureQuizSet(selectedLevel);
-  if(qIndex<quizSet.length-1) qIndex++;
+  const indexes=getPracticeIndexes(selectedLevel);
+  if(!indexes.length){ renderPractice(); return; }
+  if(qIndex<indexes.length-1) qIndex++;
   renderPractice();
 }
 
 function showResultPopup({ok,hint,onConfirm}){
   const host=document.getElementById('popupHost');
-  const secsStart=ok?5:10;
-  let secs=secsStart;
+  const autoEnabled = ok ? autoNextMode==='auto' : true;
+  const secsStart = ok ? autoNextSeconds : 10;
+  let secs = secsStart;
   host.innerHTML=`<div class="popup-overlay"><div class="popup-card">
     <h3 class="popup-title">${ok?'✅ Correct answer!':'❌ Wrong answer'}</h3>
-    <div>${ok?'Want to continue?':'Want to try again?'}</div>
+    <div>${ok?'Continue to next question?':'Want to try again?'}</div>
     ${ok?'':`<div class="popup-hint">💡 Hint: ${hint||'No hint available.'}</div>`}
-    <div class="timer">Auto ${ok?'continue':'close'} in <strong id="popupTimer">${secs}</strong>s</div>
+    <div class="timer">${autoEnabled?`Auto ${ok?'continue':'close'} in <strong id="popupTimer">${secs}</strong>s`:'Auto-continue is disabled (click to continue).'}</div>
     <div class="popup-actions">
-      <button class="btn" id="popupConfirm">${ok?'Yes, continue':'Try again now'}</button>
+      <button class="btn" id="popupConfirm">${ok?'Continue':'Try again now'}</button>
       <button class="btn" id="popupClose">Close</button>
     </div>
   </div></div>`;
 
+  let intv=null;
   const timerEl=document.getElementById('popupTimer');
-  const close=()=>{clearInterval(intv); host.innerHTML='';};
-  const intv=setInterval(()=>{
-    secs-=1;
-    if(timerEl) timerEl.textContent=String(Math.max(0,secs));
-    if(secs<=0){
-      clearInterval(intv);
-      if(ok && onConfirm) onConfirm();
-      close();
-    }
-  },1000);
+  const close=()=>{ if(intv) clearInterval(intv); host.innerHTML=''; };
+  if(autoEnabled){
+    intv=setInterval(()=>{
+      secs-=1;
+      if(timerEl) timerEl.textContent=String(Math.max(0,secs));
+      if(secs<=0){
+        if(intv) clearInterval(intv);
+        if(ok && onConfirm) onConfirm();
+        close();
+      }
+    },1000);
+  }
 
   document.getElementById('popupConfirm').onclick=()=>{ if(ok && onConfirm) onConfirm(); close(); };
   document.getElementById('popupClose').onclick=close;
@@ -1340,37 +1416,62 @@ function renderMostImportantCalculation(){
   });
 }
 function renderPractice(){
-  const lvl=course[selectedLevel];
   const quizSet=ensureQuizSet(selectedLevel);
-  const q=quizSet[qIndex];
-  const alreadySolved = !!results[selectedLevel][qIndex];
-  const done=results[selectedLevel].filter(Boolean).length;
+  const practiceIndexes=getPracticeIndexes(selectedLevel);
   const pane=document.getElementById('practicePane');
+
+  if(!practiceIndexes.length){
+    const total=quizSet.length;
+    const done=results[selectedLevel].filter(Boolean).length;
+    pane.innerHTML=`<div class="qcard">
+      <div class="qmeta"><span>Practice</span><span>Solved: ${done}/${total}</span></div>
+      <div>✅ No pending questions in this set.</div>
+      <div class="settings-help" style="margin-top:8px">${hideSolvedPractice?'Hide solved is ON, so solved questions are not shown.':'All questions are solved.'}</div>
+      <div class="practice-tools" style="margin-top:10px"><button class="btn" id="reshuffleBtn" style="padding:6px 10px">🔀 New random set</button></div>
+    </div>`;
+    document.getElementById('reshuffleBtn').onclick=()=>{ensureQuizSet(selectedLevel,true);renderPractice();};
+    return;
+  }
+
+  qIndex=Math.min(Math.max(0,qIndex), practiceIndexes.length-1);
+  const actualIdx=practiceIndexes[qIndex];
+  const q=quizSet[actualIdx];
+  const alreadySolved = !!results[selectedLevel][actualIdx];
+  const done=results[selectedLevel].filter(Boolean).length;
+
   pane.innerHTML=`<div class="qcard">
-    <div class="qmeta"><span>Question ${qIndex+1}/${quizSet.length}</span><span>Solved: ${done}/${quizSet.length}</span></div>
+    <div class="qmeta"><span>Question ${qIndex+1}/${practiceIndexes.length}</span><span>Solved: ${done}/${quizSet.length}</span></div>
     <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin:6px 0 8px"><div>${q.q}</div><button class="btn" id="hintBtn" style="padding:6px 10px">💡 Hint</button></div>
     <div id="hint" class="hint">${q.hint}</div>
     <div id="answerArea"></div>
     <div class="practice-tools"><button class="btn" id="reshuffleBtn" style="padding:6px 10px">🔀 New random set</button></div>
     <div class="feedback" id="fb">${alreadySolved?'✅ Already solved.':''}</div>
-    <div class="nav"><button class="btn" id="prev" ${qIndex===0?'disabled':''}>← Previous</button><button class="btn" id="next" ${qIndex===quizSet.length-1?'disabled':''}>Next →</button></div>
+    <div class="nav"><button class="btn" id="prev" ${qIndex===0?'disabled':''}>← Previous</button><button class="btn" id="next" ${qIndex===practiceIndexes.length-1?'disabled':''}>Next →</button></div>
   </div>`;
 
   const evaluateAnswer = (value)=>{
-    if(results[selectedLevel][qIndex]) return;
+    if(results[selectedLevel][actualIdx]) return;
     const ok = normalize(value)===normalize(q.a);
     const fb=document.getElementById('fb');
     if(ok){
       fb.textContent='✅ Correct!';
       fb.className='feedback good';
-      results[selectedLevel][qIndex]=true;
-      recordAnswer(q, selectedLevel, qIndex, true);
+      results[selectedLevel][actualIdx]=true;
+      recordAnswer(q, selectedLevel, actualIdx, true);
       tryCompleteLevel();
-      showResultPopup({ok:true,onConfirm:nextQuestion});
+      const onDone=()=>{
+        const rem=getPracticeIndexes(selectedLevel);
+        if(!rem.length){ qIndex=0; }
+        else if(hideSolvedPractice) qIndex=Math.min(qIndex, rem.length-1);
+        else nextQuestion();
+        renderPractice();
+      };
+      if(hideSolvedPractice) showResultPopup({ok:true,onConfirm:onDone});
+      else showResultPopup({ok:true,onConfirm:nextQuestion});
     } else {
       fb.textContent='❌ Not correct yet.';
       fb.className='feedback bad';
-      recordAnswer(q, selectedLevel, qIndex, false);
+      recordAnswer(q, selectedLevel, actualIdx, false);
       document.getElementById('hint').classList.add('show');
       showResultPopup({ok:false,hint:q.hint});
     }
@@ -1378,27 +1479,25 @@ function renderPractice(){
 
   const a=document.getElementById('answerArea');
   if(q.type==='mcq'){
-    a.innerHTML=q.options.map((o,i)=>`<label class="opt" data-choice="${o.replace(/"/g,'&quot;')}">${String.fromCharCode(65+i)}) ${o}<span class="keycap">${i+1}</span></label>`).join('');
-    let selectedChoice = null;
-    const optionsEls = [...a.querySelectorAll('.opt')];
-    optionsEls.forEach(el=>el.onclick=()=>{
-      if(results[selectedLevel][qIndex]) return;
-      selectedChoice=el.getAttribute('data-choice');
-      optionsEls.forEach(x=>x.classList.remove('selected'));
-      el.classList.add('selected');
-      evaluateAnswer(selectedChoice);
+    let selectedChoice='';
+    a.innerHTML=q.options.map((opt,i)=>`<label class="opt" data-opt="${i}"><input type="radio" name="opt" value="${opt}" ${alreadySolved?'disabled':''}/> ${String.fromCharCode(65+i)}) ${opt}<span class="keycap">${i+1}</span></label>`).join('');
+    const optionsEls=[...a.querySelectorAll('.opt')];
+    optionsEls.forEach(el=>{
+      el.onclick=()=>{
+        if(results[selectedLevel][actualIdx]) return;
+        optionsEls.forEach(x=>x.classList.remove('selected'));
+        el.classList.add('selected');
+        selectedChoice=el.querySelector('input').value;
+        evaluateAnswer(selectedChoice);
+      };
+      el.style.cursor=results[selectedLevel][actualIdx]?'default':'pointer';
     });
-    if(alreadySolved){
-      optionsEls.forEach(el=>{
-        el.style.opacity='0.75';
-        el.style.cursor='default';
-      });
-    }
+
     window.onkeydown=(e)=>{
       const k=e.key.toLowerCase();
       if(k==='arrowleft' || k==='a'){ goPrev(); return; }
       if(k==='arrowright' || k==='d'){ goNext(); return; }
-      if(results[selectedLevel][qIndex]) return;
+      if(results[selectedLevel][actualIdx]) return;
       const n=Number(e.key);
       if(n>=1 && n<=q.options.length){
         selectedChoice=q.options[n-1];
@@ -1417,7 +1516,7 @@ function renderPractice(){
       setTimeout(()=>{ input.focus(); input.select(); },0);
     }
     const submit=()=>{
-      if(results[selectedLevel][qIndex]) return;
+      if(results[selectedLevel][actualIdx]) return;
       const parsed=evaluateExcelLike(input.value);
       const candidate = Number.isNaN(parsed) ? input.value : String(parsed);
       const ok=calcMatch(q.a,candidate);
@@ -1425,14 +1524,22 @@ function renderPractice(){
       if(ok){
         fb.textContent='✅ Correct!';
         fb.className='feedback good';
-        results[selectedLevel][qIndex]=true;
-        recordAnswer(q, selectedLevel, qIndex, true);
+        results[selectedLevel][actualIdx]=true;
+        recordAnswer(q, selectedLevel, actualIdx, true);
         tryCompleteLevel();
-        showResultPopup({ok:true,onConfirm:nextQuestion});
+        const onDone=()=>{
+          const rem=getPracticeIndexes(selectedLevel);
+          if(!rem.length){ qIndex=0; }
+          else if(hideSolvedPractice) qIndex=Math.min(qIndex, rem.length-1);
+          else nextQuestion();
+          renderPractice();
+        };
+        if(hideSolvedPractice) showResultPopup({ok:true,onConfirm:onDone});
+        else showResultPopup({ok:true,onConfirm:nextQuestion});
       }else{
         fb.textContent='❌ Not correct yet.';
         fb.className='feedback bad';
-        recordAnswer(q, selectedLevel, qIndex, false);
+        recordAnswer(q, selectedLevel, actualIdx, false);
         document.getElementById('hint').classList.add('show');
         showResultPopup({ok:false,hint:q.hint});
       }
@@ -1448,7 +1555,7 @@ function renderPractice(){
 
   document.getElementById('hintBtn').onclick=()=>document.getElementById('hint').classList.toggle('show');
   const goPrev=()=>{qIndex=Math.max(0,qIndex-1);renderPractice();};
-  const goNext=()=>{qIndex=Math.min(quizSet.length-1,qIndex+1);renderPractice();};
+  const goNext=()=>{qIndex=Math.min(practiceIndexes.length-1,qIndex+1);renderPractice();};
   document.getElementById('prev').onclick=goPrev;
   document.getElementById('next').onclick=goNext;
   document.getElementById('reshuffleBtn').onclick=()=>{ensureQuizSet(selectedLevel,true);renderPractice();};
@@ -1495,10 +1602,8 @@ function tryCompleteLevel(){
 function pop(msg){const d=document.createElement('div');d.className='unlock-pop';d.textContent=msg;document.body.appendChild(d);setTimeout(()=>d.remove(),1400)}
 document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{currentTab=b.dataset.tab;renderContent();});
 document.getElementById('toggleLevels').onclick=()=>{levelsCollapsed=!levelsCollapsed;renderLevels();};
-document.getElementById('focusToggle').onclick=()=>{focusMode=!focusMode;applyFocusMode();};
-document.getElementById('themeToggle').onclick=()=>{lightTheme=!lightTheme;applyTheme();};
-document.getElementById('unlockStar').onclick=showUnlockPasswordPrompt;
-renderLevels();ensureQuizSet(selectedLevel);renderContent();applyFocusMode();applyTheme();
+document.getElementById('settingsBtn').onclick=showSettingsMenu;
+renderLevels();ensureQuizSet(selectedLevel);renderContent();applyFocusMode();applyTheme();saveSettings();
 </script>
 </body>
 </html>
