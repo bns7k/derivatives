@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Derivatives Course</title>
+  <title>Corporate Finance Lab</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%92%B0%3C/text%3E%3C/svg%3E">
   <style>
     :root{--bg:#0f1220;--panel:#171a2b;--panel2:#1e2240;--text:#e8ebff;--muted:#9aa3d3;--ok:#4ade80;--warn:#f59e0b;--lock:#64748b;--accent:#7c83ff}
@@ -112,12 +112,131 @@
     body.light-theme .ultra-mode-badge{background:#fee2e2;color:#991b1b;border-color:#fecaca}
 
     @media (max-width:980px){.layout{grid-template-columns:1fr}.levels{grid-template-columns:repeat(3,1fr)}}
+
+    /* Corporate Finance light theme overrides */
+    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap');
+    :root{
+      --bg:#f3f5fa;
+      --panel:#ffffff;
+      --panel2:#ffffff;
+      --text:#0f172a;
+      --muted:#64748b;
+      --ok:#11c95f;
+      --warn:#d97706;
+      --lock:#94a3b8;
+      --accent:#1d4ed8;
+      --line:#d7deea;
+    }
+    *{font-family:'Manrope',Inter,system-ui,-apple-system,'Segoe UI',Arial,sans-serif}
+    body{background:var(--bg);color:var(--text)}
+    .wrap{max-width:1260px}
+    h1{font-weight:800;letter-spacing:.2px}
+    .subtitle{color:#475569;max-width:980px}
+
+    .layout{gap:16px}
+    .card,.qcard,.theory-sec,.review-item,.formula-card,.popup-card{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:16px;
+      box-shadow:0 6px 22px rgba(15,23,42,.04);
+      backdrop-filter:none;
+    }
+    .qcard{padding:18px;border-radius:18px}
+
+    .levels{gap:12px}
+    .level{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:14px;
+      color:#0f172a;
+      padding:14px;
+    }
+    .level .name{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#64748b}
+    .level .status{font-size:13px;color:#0f172a;font-weight:700}
+    .level.current{box-shadow:0 0 0 2px rgba(37,99,235,.2),0 8px 24px rgba(37,99,235,.12)}
+    .level.completed{border-color:#86efac;background:linear-gradient(180deg,#f7fff8,#ffffff)}
+
+    .tabs{gap:10px}
+    .tab{
+      border:1px solid var(--line);
+      border-radius:999px;
+      background:#fff;
+      color:#334155;
+      font-weight:700;
+      padding:10px 16px;
+    }
+    .tab.active{background:#eff6ff;border-color:#bfdbfe;color:#1e3a8a}
+
+    .theory-summary{color:#334155}
+    .theory-toggle{
+      background:#f8fafc;
+      border:1px solid #dbe3ef;
+      color:#0f172a;
+      border-radius:14px;
+      font-size:14px;
+    }
+    .theory-panel{
+      background:#f8fbff;
+      border:1px solid #d9e5f6;
+      border-radius:14px;
+      color:#1e293b;
+    }
+    .theory-calc,.formula-eq{
+      background:#eef4ff;
+      border:1px solid #c9daf7;
+      color:#1e3a8a;
+      border-radius:12px;
+    }
+
+    .qmeta,.progress,.review-meta,.status,.theory-fig,.theory-ex{color:#64748b}
+
+    .opt{
+      border:1px solid #d6deeb;
+      border-radius:14px;
+      background:#fff;
+      transition:all .18s ease;
+      color:#0f172a;
+      font-weight:600;
+    }
+    .opt:hover{border-color:#93c5fd;box-shadow:0 4px 14px rgba(30,64,175,.1)}
+    .opt.selected{border-color:#60a5fa;background:#eff6ff}
+
+    .hint{
+      background:#fff8ea;
+      border:1px solid #fcd9a9;
+      color:#9a5800;
+      border-radius:12px;
+    }
+
+    .btn{
+      padding:9px 14px;
+      border-radius:10px;
+      border:1px solid #11c95f;
+      background:#11d866;
+      color:#082113;
+      font-weight:800;
+      letter-spacing:.01em;
+      box-shadow:0 2px 0 rgba(6,95,39,.25);
+    }
+    .btn:hover{filter:brightness(.97)}
+
+    input[type="text"],input[type="number"],select{
+      background:#fff;
+      color:#0f172a;
+      border:1px solid #cfd8e6;
+      border-radius:12px;
+    }
+
+    .popup-overlay{background:rgba(15,23,42,.28)}
+    .popup-card{border-radius:18px}
+    iframe{border:1px solid #d5dfec;border-radius:14px}
+
   </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>Derivatives Course</h1>
-  <p class="subtitle">This learning path is based on the structure of the Pricing and Forecasting course at BME and the textbook Options, Futures, and Other Derivatives. Learn step by step through structured levels. Each level begins with theory and is followed by practice exercises. The next level unlocks once you successfully complete the current one.</p>
+  <h1>Corporate Finance Lab</h1>
+  <p class="subtitle">Prototype Corporate Finance project with filler materials. All major learning app features are kept (levels, theory cards, optional formulas, practice, review, settings, Pomodoro, and ULTRA mode) in a cleaner white, modular visual style.</p>
   <div class="layout">
     <div class="card" id="sidebarCard">
       <h3>Progress</h3>
@@ -895,6 +1014,69 @@ course[8].questionBank = chapter9QuestionBank;
 course[9].questionBank = chapter10QuestionBank;
 course[10].questionBank = chapter11QuestionBank;
 course[11].questionBank = chapter12QuestionBank;
+
+
+function normalizeTextKey(v){ return String(v||'').trim().toLowerCase(); }
+function applyCorporateFinanceFillerContent(levels){
+  levels.forEach((level, li)=>{
+    level.title = `Corporate Finance Module ${li+1}`;
+    level.summary = [
+      `Filler concept ${li+1}.1: placeholder theory note for structure testing.`,
+      `Filler concept ${li+1}.2: modular explanation block text.`,
+      `Filler concept ${li+1}.3: short key takeaway for review flow.`,
+      `Filler concept ${li+1}.4: synthetic example sentence only.`,
+      `Filler concept ${li+1}.5: reminder bullet for practice mode.`
+    ];
+    if(Array.isArray(level.sections)){
+      level.sections = level.sections.map((sec,si)=>({
+        ...sec,
+        title:`CF Topic ${li+1}.${si+1}`,
+        text:`Placeholder corporate finance theory paragraph for module ${li+1}, section ${si+1}.`,
+        detail:`Extra placeholder detail to validate expandable section behavior and card layout.`,
+        example:`Example filler: assume generic firm metrics and interpret trend direction only.`,
+        calc:`Mini check filler: use sample variables and compute a single numeric indicator.`,
+        figure:`📘 Figure placeholder: simple chart/card mock for corporate finance visuals.`
+      }));
+    }
+    if(Array.isArray(level.quiz)){
+      level.quiz = level.quiz.map((q,qi)=>{
+        const base={...q};
+        base.hint = `Filler hint for module ${li+1}, question ${qi+1}.`;
+        if(q.type==='mcq'){
+          const oldOpts = Array.isArray(q.options) ? q.options : [];
+          const oldIdx = Math.max(0, oldOpts.findIndex(o=>normalizeTextKey(o)===normalizeTextKey(q.a)));
+          const opts=[
+            `Placeholder answer A (${li+1}.${qi+1})`,
+            `Placeholder answer B (${li+1}.${qi+1})`,
+            `Placeholder answer C (${li+1}.${qi+1})`,
+            `Placeholder answer D (${li+1}.${qi+1})`
+          ];
+          base.q = `Filler MCQ ${li+1}.${qi+1}: corporate finance placeholder prompt.`;
+          base.options = opts;
+          base.a = opts[oldIdx % opts.length];
+          return base;
+        }
+        if(q.type==='calcVar' && typeof q.build==='function'){
+          const originalBuild = q.build;
+          base.title = `CF Placeholder Calc ${li+1}.${qi+1}`;
+          base.build = (v)=>{
+            const out = originalBuild(v) || {};
+            return { ...out, q:`Filler CALC ${li+1}.${qi+1}: enter the computed numeric placeholder value.` };
+          };
+          return base;
+        }
+        if(q.type==='calc'){
+          base.q = `Filler CALC ${li+1}.${qi+1}: compute the placeholder metric and enter one number.`;
+          return base;
+        }
+        return base;
+      });
+    }
+  });
+}
+
+applyCorporateFinanceFillerContent(course);
+
 const theorySectionsByLevel = {
   0: course[0].theorySections || [],
   1: [
@@ -1633,9 +1815,9 @@ function renderContent(){
   <ul class="theory-summary">${lvl.summary.map(s=>`<li>${s}</li>`).join('')}</ul>
   ${sectionsHtml}
   <h4>Chapter starting page: ${chapterPages[selectedLevel]}</h4>
-  <div class="pdf-tools"><a class="btn" href="options.pdf#page=${chapterPages[selectedLevel]}" target="_blank">Open Lecture Material (PDF)</a>
-  <a class="btn" href="options.pdf" download>Download PDF</a></div>
-  <iframe src="options.pdf#page=${chapterPages[selectedLevel]}"></iframe>`;
+  <div class="pdf-tools"><a class="btn" href="../options.pdf#page=${chapterPages[selectedLevel]}" target="_blank">Open Lecture Material (PDF)</a>
+  <a class="btn" href="../options.pdf" download>Download PDF</a></div>
+  <iframe src="../options.pdf#page=${chapterPages[selectedLevel]}"></iframe>`;
 
   th.querySelectorAll('.theory-toggle').forEach(btn=>{
     btn.onclick=()=>{
